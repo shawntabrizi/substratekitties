@@ -1,0 +1,7 @@
+{
+    "Kitty": {
+        "name": "Vec<u8>",
+        "dna": "H256",
+        "price": "Balance"
+    }
+}
