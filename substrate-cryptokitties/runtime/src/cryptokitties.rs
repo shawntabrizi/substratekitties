@@ -91,7 +91,7 @@ decl_module! {
 }
 
 decl_storage! {
-  trait Store for Module<T: Trait> as RuntimeExampleStorage {
+  trait Store for Module<T: Trait> as CryptokittiesStorage {
     KittiesCount get(kitty_count): u32 = 0;
     Kitties get(kitty): map u32 => Kitty<T::Hash, T::Balance>;
     OwnerToKitties get(owned_kitties): map T::AccountId => Vec<u32>;
