@@ -20,6 +20,7 @@ srml-balances = { git = "https://github.com/paritytech/substrate" }
 srml-consensus = { git = "https://github.com/paritytech/substrate" }
 srml-aura = { git = "https://github.com/paritytech/substrate" }
 srml-executive = { git = "https://github.com/paritytech/substrate" }
+srml-indices = { git = "https://github.com/paritytech/substrate" }
 sr-primitives = { git = "https://github.com/paritytech/substrate" }
 srml-system = { git = "https://github.com/paritytech/substrate" }
 srml-timestamp = { git = "https://github.com/paritytech/substrate" }
@@ -40,6 +41,7 @@ std = [
 	"srml-balances/std",
 	"srml-executive/std",
 	"srml-aura/std",
+	"srml-indices/std",
 	"sr-primitives/std",
 	"srml-system/std",
 	"srml-timestamp/std",

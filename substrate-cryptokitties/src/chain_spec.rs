@@ -1,6 +1,7 @@
 use primitives::{Ed25519AuthorityId, ed25519};
 use substrate_cryptokitties_runtime::{
-	AccountId, GenesisConfig, ConsensusConfig, TimestampConfig, BalancesConfig, SudoConfig,
+	AccountId, GenesisConfig, ConsensusConfig, TimestampConfig, BalancesConfig,
+	SudoConfig, IndicesConfig
 };
 use substrate_service;
 
@@ -85,13 +86,15 @@ fn testnet_genesis(initial_authorities: Vec<Ed25519AuthorityId>, endowed_account
 		timestamp: Some(TimestampConfig {
 			period: 5,					// 5 second block time.
 		}),
+		indices: Some(IndicesConfig {
+			ids: endowed_accounts.clone(),
+		}),
 		balances: Some(BalancesConfig {
 			transaction_base_fee: 1,
 			transaction_byte_fee: 0,
 			existential_deposit: 500,
 			transfer_fee: 0,
 			creation_fee: 0,
-			reclaim_rebate: 0,
 			balances: endowed_accounts.iter().map(|&k|(k, (1 << 60))).collect(),
 		}),
 		sudo: Some(SudoConfig {

@@ -22,7 +22,6 @@ extern crate substrate_basic_authorship as basic_authorship;
 #[macro_use]
 extern crate substrate_service;
 extern crate substrate_cryptokitties_runtime;
-#[macro_use]
 extern crate structopt;
 extern crate node_executor;
 extern crate sr_primitives as runtime_primitives;
