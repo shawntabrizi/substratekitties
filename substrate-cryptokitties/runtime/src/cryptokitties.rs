@@ -1,7 +1,7 @@
 use parity_codec::Encode;
 use srml_support::{StorageValue, StorageMap, dispatch::Result};
 use system::ensure_signed;
-use runtime_primitives::traits::Hash;
+use runtime_primitives::traits::{As, Hash, Zero};
 use rstd::prelude::*;
 use rstd::cmp;
 
@@ -10,7 +10,7 @@ pub struct Kitty<Hash, Balance> {
     id: Hash,
     name: Vec<u8>,
     dna: Hash,
-    price: Option<Balance>,
+    price: Balance,
     gen: u64,
 }
 
@@ -26,6 +26,8 @@ decl_event!(
     {
         Created(AccountId, Hash),
         Transferred(AccountId, AccountId, Hash),
+        Bought(AccountId, AccountId, Hash),
+        PriceSet(AccountId, Hash),
     }
 );
 
@@ -75,7 +77,7 @@ decl_module! {
                                 id: random_hash,
                                 name: name,
                                 dna: random_hash,
-                                price: None,
+                                price: <T::Balance as As<u64>>::sa(0),
                                 gen: 0,
                             };
 
@@ -86,7 +88,7 @@ decl_module! {
             Ok(())
         }
 
-        fn set_price(origin, kitty_id: T::Hash, new_price: Option<T::Balance>) -> Result {
+        fn set_price(origin, kitty_id: T::Hash, new_price: T::Balance) -> Result {
             let sender = ensure_signed(origin)?;
 
             ensure!(<Kitties<T>>::exists(kitty_id), "This cat does not exist");
@@ -101,6 +103,8 @@ decl_module! {
             kitty.price = new_price;
 
             <Kitties<T>>::insert(kitty_id, kitty);
+
+            Self::deposit_event(RawEvent::PriceSet(sender, kitty_id));
 
             Ok(())
         }
@@ -117,21 +121,19 @@ decl_module! {
             ensure!(owner != sender, "You can't buy your own cat");
 
             let mut kitty = Self::kitty(kitty_id);
-            let kitty_price = match kitty.price {
-                Some(p) => p,
-                None => return Err("The cat you want to buy is not for sale"),
-            };
-
-            ensure!(kitty_price < max_price, "The cat you want to buy costs more than your max price");
+            ensure!(!kitty.price.is_zero(), "The cat you want to buy is not for sale");
+            ensure!(kitty.price < max_price, "The cat you want to buy costs more than your max price");
 
             // TODO: This payment logic needs to be updated
-            <balances::Module<T>>::decrease_free_balance(&sender, kitty_price)?;
-            <balances::Module<T>>::increase_free_balance_creating(&owner, kitty_price);
+            <balances::Module<T>>::decrease_free_balance(&sender, kitty.price)?;
+            <balances::Module<T>>::increase_free_balance_creating(&owner, kitty.price);
 
-            Self::_transfer_from(owner, sender, kitty_id)?;
+            Self::_transfer_from(owner.clone(), sender.clone(), kitty_id)?;
 
-            kitty.price = None;
+            kitty.price = <T::Balance as As<u64>>::sa(0);
             <Kitties<T>>::insert(kitty_id, kitty);
+
+            Self::deposit_event(RawEvent::Bought(sender, owner, kitty_id));
 
             Ok(())
         }
@@ -161,7 +163,7 @@ decl_module! {
                                 id: random_hash,
                                 name: name,
                                 dna: final_dna,
-                                price: None,
+                                price: <T::Balance as As<u64>>::sa(0),
                                 gen: cmp::max(kitty_1.gen, kitty_2.gen) + 1,
                             };
 
