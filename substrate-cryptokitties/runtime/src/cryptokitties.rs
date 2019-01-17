@@ -1,7 +1,7 @@
 use parity_codec::Encode;
 use srml_support::{StorageValue, StorageMap, dispatch::Result};
 use system::ensure_signed;
-use runtime_primitives::traits::{Hash, Zero, As};
+use runtime_primitives::traits::Hash;
 use rstd::prelude::*;
 use rstd::cmp;
 
@@ -10,7 +10,7 @@ pub struct Kitty<Hash, Balance> {
     id: Hash,
     name: Vec<u8>,
     dna: Hash,
-    price: Balance,
+    price: Option<Balance>,
     gen: u64,
 }
 
@@ -24,20 +24,21 @@ decl_event!(
         <T as system::Trait>::AccountId,
         <T as system::Trait>::Hash
     {
-        Transfer(Option<AccountId>, Option<AccountId>, Hash),
+        Created(AccountId, Hash),
+        Transferred(AccountId, AccountId, Hash),
     }
 );
 
 decl_storage! {
     trait Store for Module<T: Trait> as KittyStorage {
-        OwnedTokensCount get(balance_of): map T::AccountId => u64;
-        TokenOwner get(owner_of): map T::Hash => Option<T::AccountId>;
+        OwnedKittiesCount get(owned_kitty_count): map T::AccountId => u64;
+        KittyOwner get(owner_of): map T::Hash => Option<T::AccountId>;
 
-        TotalSupply get(total_supply): u64;
-        AllTokens get(token_by_index): map u64 => T::Hash;
-        AllTokensIndex: map T::Hash => u64;
-        OwnedTokens get(token_of_owner_by_index): map (T::AccountId, u64) => T::Hash;
-        OwnedTokensIndex: map T::Hash => u64;
+        AllKittiesCount get(all_kitties_count): u64;
+        AllKitties get(kitty_by_index): map u64 => T::Hash;
+        AllKittiesIndex: map T::Hash => u64;
+        OwnedKitties get(kitty_of_owner_by_index): map (T::AccountId, u64) => T::Hash;
+        OwnedKittiesIndex: map T::Hash => u64;
 
         Nonce: u64;
         Kitties get(kitty): map T::Hash => Kitty<T::Hash, T::Balance>;
@@ -49,16 +50,16 @@ decl_module! {
 
         fn deposit_event<T>() = default;
 
-        fn transfer(origin, to: T::AccountId, token_id: T::Hash) -> Result {
+        fn transfer(origin, to: T::AccountId, kitty_id: T::Hash) -> Result {
             let sender = ensure_signed(origin)?;
 
-            let owner = match Self::owner_of(token_id) {
+            let owner = match Self::owner_of(kitty_id) {
                 Some(o) => o,
-                None => return Err("No owner for this token"),
+                None => return Err("No owner for this kitty"),
             };
-            ensure!(owner == sender, "You do not own this token");
+            ensure!(owner == sender, "You do not own this kitty");
 
-            Self::_transfer_from(sender, to, token_id)?;
+            Self::_transfer_from(sender, to, kitty_id)?;
 
             Ok(())
         }
@@ -66,13 +67,14 @@ decl_module! {
         fn create_kitty(origin, name: Vec<u8>) -> Result {
             let sender = ensure_signed(origin)?;
             let nonce = <Nonce<T>>::get();
-            let random_hash = (<system::Module<T>>::random_seed(), &sender, nonce).using_encoded(<T as system::Trait>::Hashing::hash);
+            let random_hash = (<system::Module<T>>::random_seed(), &sender, nonce)
+                                .using_encoded(<T as system::Trait>::Hashing::hash);
 
             let new_kitty = Kitty {
                                 id: random_hash,
                                 name: name,
                                 dna: random_hash,
-                                price: <T::Balance as As<u64>>::sa(0),
+                                price: None,
                                 gen: 0,
                             };
 
@@ -83,63 +85,68 @@ decl_module! {
             Ok(())
         }
 
-        fn set_price(origin, token_id: T::Hash, new_price: T::Balance) -> Result {
+        fn set_price(origin, kitty_id: T::Hash, new_price: Option<T::Balance>) -> Result {
             let sender = ensure_signed(origin)?;
 
-            ensure!(<Kitties<T>>::exists(token_id), "This cat does not exist");
+            ensure!(<Kitties<T>>::exists(kitty_id), "This cat does not exist");
 
-            let owner = match Self::owner_of(token_id) {
+            let owner = match Self::owner_of(kitty_id) {
                 Some(c) => c,
-                None => return Err("No owner for this token"),
+                None => return Err("No owner for this kitty"),
             };
             ensure!(owner == sender, "You do not own this cat");
 
-            let mut kitty = Self::kitty(token_id);
+            let mut kitty = Self::kitty(kitty_id);
             kitty.price = new_price;
 
-            <Kitties<T>>::insert(token_id, kitty);
+            <Kitties<T>>::insert(kitty_id, kitty);
 
             Ok(())
         }
         
-        fn buy_cat(origin, token_id: T::Hash, max_price: T::Balance) -> Result {
+        fn buy_cat(origin, kitty_id: T::Hash, max_price: T::Balance) -> Result {
             let sender = ensure_signed(origin)?;
 
-            ensure!(<Kitties<T>>::exists(token_id), "This cat does not exist");
+            ensure!(<Kitties<T>>::exists(kitty_id), "This cat does not exist");
 
-            let owner = match Self::owner_of(token_id) {
+            let owner = match Self::owner_of(kitty_id) {
                 Some(o) => o,
-                None => return Err("No owner for this token"),
+                None => return Err("No owner for this kitty"),
             };
             ensure!(owner != sender, "You can't buy your own cat");
 
-            let mut kitty = Self::kitty(token_id);
-            ensure!(!kitty.price.is_zero(), "The cat you want to buy is not for sale");
-            ensure!(kitty.price < max_price, "The cat you want to buy costs more than your max price");
+            let mut kitty = Self::kitty(kitty_id);
+            let kitty_price = match kitty.price {
+                Some(p) => p,
+                None => return Err("The cat you want to buy is not for sale"),
+            };
+
+            ensure!(kitty_price < max_price, "The cat you want to buy costs more than your max price");
 
             // TODO: This payment logic needs to be updated
-            <balances::Module<T>>::decrease_free_balance(&sender, kitty.price)?;
-            <balances::Module<T>>::increase_free_balance_creating(&owner, kitty.price);
+            <balances::Module<T>>::decrease_free_balance(&sender, kitty_price)?;
+            <balances::Module<T>>::increase_free_balance_creating(&owner, kitty_price);
 
-            Self::_transfer_from(owner, sender, token_id)?;
+            Self::_transfer_from(owner, sender, kitty_id)?;
 
-            kitty.price = <T::Balance as As<u64>>::sa(0);
-            <Kitties<T>>::insert(token_id, kitty);
+            kitty.price = None;
+            <Kitties<T>>::insert(kitty_id, kitty);
 
             Ok(())
         }
 
-        fn breed_cat(origin, name: Vec<u8>, token_id_1: T::Hash, token_id_2: T::Hash) -> Result{
+        fn breed_cat(origin, name: Vec<u8>, kitty_id_1: T::Hash, kitty_id_2: T::Hash) -> Result{
             let sender = ensure_signed(origin)?;
 
-            ensure!(<Kitties<T>>::exists(token_id_1), "This cat 1 does not exist");
-            ensure!(<Kitties<T>>::exists(token_id_2), "This cat 2 does not exist");
+            ensure!(<Kitties<T>>::exists(kitty_id_1), "This cat 1 does not exist");
+            ensure!(<Kitties<T>>::exists(kitty_id_2), "This cat 2 does not exist");
 
             let nonce = <Nonce<T>>::get();
-            let random_hash = (<system::Module<T>>::random_seed(), &sender, nonce).using_encoded(<T as system::Trait>::Hashing::hash);
+            let random_hash = (<system::Module<T>>::random_seed(), &sender, nonce)
+                                .using_encoded(<T as system::Trait>::Hashing::hash);
 
-            let kitty_1 = Self::kitty(token_id_1);
-            let kitty_2 = Self::kitty(token_id_2);
+            let kitty_1 = Self::kitty(kitty_id_1);
+            let kitty_2 = Self::kitty(kitty_id_2);
 
             let mut final_dna = kitty_1.dna;
 
@@ -153,7 +160,7 @@ decl_module! {
                                 id: random_hash,
                                 name: name,
                                 dna: final_dna,
-                                price: <T::Balance as As<u64>>::sa(0),
+                                price: None,
                                 gen: cmp::max(kitty_1.gen, kitty_2.gen) + 1,
                             };
 
@@ -168,129 +175,129 @@ decl_module! {
 }
 
 impl<T: Trait> Module<T> {
-    fn _mint(to: T::AccountId, token_id: T::Hash) -> Result {
-        ensure!(!<TokenOwner<T>>::exists(token_id), "Token already exists");
+    fn _mint(to: T::AccountId, kitty_id: T::Hash) -> Result {
+        ensure!(!<KittyOwner<T>>::exists(kitty_id), "Kitty already exists");
 
-        let balance_of = Self::balance_of(&to);
+        let owned_kitty_count = Self::owned_kitty_count(&to);
 
-        let new_balance_of = match balance_of.checked_add(1) {
+        let new_owned_kitty_count = match owned_kitty_count.checked_add(1) {
             Some(c) => c,
-            None => return Err("Overflow adding a new token to account balance"),
+            None => return Err("Overflow adding a new kitty to account balance"),
         };
 
-        Self::_add_token_to_all_tokens_enumeration(token_id)?;
-        Self::_add_token_to_owner_enumeration(to.clone(), token_id)?;
+        Self::_add_kitty_to_all_kitties_enumeration(kitty_id)?;
+        Self::_add_kitty_to_owner_enumeration(to.clone(), kitty_id)?;
 
-        <TokenOwner<T>>::insert(token_id, &to);
-        <OwnedTokensCount<T>>::insert(&to, new_balance_of);
+        <KittyOwner<T>>::insert(kitty_id, &to);
+        <OwnedKittiesCount<T>>::insert(&to, new_owned_kitty_count);
 
-        Self::deposit_event(RawEvent::Transfer(None, Some(to), token_id));
+        Self::deposit_event(RawEvent::Created(to, kitty_id));
 
         Ok(())
     }
 
-    fn _transfer_from(from: T::AccountId, to: T::AccountId, token_id: T::Hash) -> Result {
-        let owner = match Self::owner_of(token_id) {
+    fn _transfer_from(from: T::AccountId, to: T::AccountId, kitty_id: T::Hash) -> Result {
+        let owner = match Self::owner_of(kitty_id) {
             Some(c) => c,
-            None => return Err("No owner for this token"),
+            None => return Err("No owner for this kitty"),
         };
 
-        ensure!(owner == from, "'from' account does not own this token");
+        ensure!(owner == from, "'from' account does not own this kitty");
 
-        let balance_of_from = Self::balance_of(&from);
-        let balance_of_to = Self::balance_of(&to);
+        let owned_kitty_count_from = Self::owned_kitty_count(&from);
+        let owned_kitty_count_to = Self::owned_kitty_count(&to);
 
-        let new_balance_of_from = match balance_of_from.checked_sub(1) {
+        let new_owned_kitty_count_from = match owned_kitty_count_from.checked_sub(1) {
             Some (c) => c,
-            None => return Err("Transfer causes underflow of 'from' token balance"),
+            None => return Err("Transfer causes underflow of 'from' kitty balance"),
         };
 
-        let new_balance_of_to = match balance_of_to.checked_add(1) {
+        let new_owned_kitty_count_to = match owned_kitty_count_to.checked_add(1) {
             Some(c) => c,
-            None => return Err("Transfer causes overflow of 'to' token balance"),
+            None => return Err("Transfer causes overflow of 'to' kitty balance"),
         };
 
-        Self::_remove_token_from_owner_enumeration(from.clone(), token_id)?;
-        Self::_add_token_to_owner_enumeration(to.clone(), token_id)?;
+        Self::_remove_kitty_from_owner_enumeration(from.clone(), kitty_id)?;
+        Self::_add_kitty_to_owner_enumeration(to.clone(), kitty_id)?;
 
-        <OwnedTokensCount<T>>::insert(&from, new_balance_of_from);
-        <OwnedTokensCount<T>>::insert(&to, new_balance_of_to);
-        <TokenOwner<T>>::insert(&token_id, &to);
+        <OwnedKittiesCount<T>>::insert(&from, new_owned_kitty_count_from);
+        <OwnedKittiesCount<T>>::insert(&to, new_owned_kitty_count_to);
+        <KittyOwner<T>>::insert(&kitty_id, &to);
 
-        Self::deposit_event(RawEvent::Transfer(Some(from), Some(to), token_id));
+        Self::deposit_event(RawEvent::Transferred(from, to, kitty_id));
         
         Ok(())
     }
 
-    fn _add_token_to_owner_enumeration(to: T::AccountId, token_id: T::Hash) -> Result {
-        let new_token_index = Self::balance_of(&to);
+    fn _add_kitty_to_owner_enumeration(to: T::AccountId, kitty_id: T::Hash) -> Result {
+        let new_kitty_index = Self::owned_kitty_count(&to);
 
-        <OwnedTokensIndex<T>>::insert(token_id, new_token_index);
-        <OwnedTokens<T>>::insert((to, new_token_index), token_id);
+        <OwnedKittiesIndex<T>>::insert(kitty_id, new_kitty_index);
+        <OwnedKitties<T>>::insert((to, new_kitty_index), kitty_id);
 
         Ok(())
     }
 
-    fn _add_token_to_all_tokens_enumeration(token_id: T::Hash) -> Result {
-        let total_supply = Self::total_supply();
+    fn _add_kitty_to_all_kitties_enumeration(kitty_id: T::Hash) -> Result {
+        let all_kitties_count = Self::all_kitties_count();
 
-        let new_total_supply = match total_supply.checked_add(1) {
+        let new_all_kitties_count = match all_kitties_count.checked_add(1) {
             Some (c) => c,
-            None => return Err("Overflow when adding new token to total supply"),
+            None => return Err("Overflow when adding new kitty to total supply"),
         };
 
-        let new_token_index = total_supply;
+        let new_kitty_index = all_kitties_count;
 
-        <AllTokensIndex<T>>::insert(token_id, new_token_index);
-        <AllTokens<T>>::insert(new_token_index, token_id);
-        <TotalSupply<T>>::put(new_total_supply);
+        <AllKittiesIndex<T>>::insert(kitty_id, new_kitty_index);
+        <AllKitties<T>>::insert(new_kitty_index, kitty_id);
+        <AllKittiesCount<T>>::put(new_all_kitties_count);
 
         Ok(())
     }
 
-    fn _remove_token_from_owner_enumeration(from: T::AccountId, token_id: T::Hash) -> Result {
-        let balance_of_from = Self::balance_of(&from);
+    fn _remove_kitty_from_owner_enumeration(from: T::AccountId, kitty_id: T::Hash) -> Result {
+        let owned_kitty_count_from = Self::owned_kitty_count(&from);
 
-        let last_token_index = match balance_of_from.checked_sub(1) {
+        let last_kitty_index = match owned_kitty_count_from.checked_sub(1) {
             Some (c) => c,
-            None => return Err("Transfer causes underflow of 'from' token balance"),
+            None => return Err("Transfer causes underflow of 'from' kitty balance"),
         };
         
-        let token_index = <OwnedTokensIndex<T>>::get(token_id);
+        let kitty_index = <OwnedKittiesIndex<T>>::get(kitty_id);
 
-        if token_index != last_token_index {
-            let last_token_id = <OwnedTokens<T>>::get((from.clone(), last_token_index));
-            <OwnedTokens<T>>::insert((from.clone(), token_index), last_token_id);
-            <OwnedTokensIndex<T>>::insert(last_token_id, token_index);
+        if kitty_index != last_kitty_index {
+            let last_kitty_id = <OwnedKitties<T>>::get((from.clone(), last_kitty_index));
+            <OwnedKitties<T>>::insert((from.clone(), kitty_index), last_kitty_id);
+            <OwnedKittiesIndex<T>>::insert(last_kitty_id, kitty_index);
         }
 
-        <OwnedTokens<T>>::remove((from, last_token_index));
-        <OwnedTokensIndex<T>>::remove(token_id);
+        <OwnedKitties<T>>::remove((from, last_kitty_index));
+        <OwnedKittiesIndex<T>>::remove(kitty_id);
 
         Ok(())
     }
 
-    fn _remove_token_from_all_tokens_enumeration(token_id: T::Hash) -> Result {
-        let total_supply = Self::total_supply();
+    fn _remove_kitty_from_all_kitties_enumeration(kitty_id: T::Hash) -> Result {
+        let all_kitties_count = Self::all_kitties_count();
 
-        let new_total_supply = match total_supply.checked_sub(1) {
+        let new_all_kitties_count = match all_kitties_count.checked_sub(1) {
             Some(c) => c,
-            None => return Err("Underflow removing token from total supply"),
+            None => return Err("Underflow removing kitty from total supply"),
         };
 
-        let last_token_index = new_total_supply;
+        let last_kitty_index = new_all_kitties_count;
 
-        let token_index = <AllTokensIndex<T>>::get(token_id);
+        let kitty_index = <AllKittiesIndex<T>>::get(kitty_id);
 
-        let last_token_id = <AllTokens<T>>::get(last_token_index);
+        let last_kitty_id = <AllKitties<T>>::get(last_kitty_index);
 
-        <AllTokens<T>>::insert(token_index, last_token_id);
-        <AllTokensIndex<T>>::insert(last_token_id, token_index);
+        <AllKitties<T>>::insert(kitty_index, last_kitty_id);
+        <AllKittiesIndex<T>>::insert(last_kitty_id, kitty_index);
 
-        <AllTokens<T>>::remove(last_token_index);
-        <AllTokensIndex<T>>::remove(token_id);
+        <AllKitties<T>>::remove(last_kitty_index);
+        <AllKittiesIndex<T>>::remove(kitty_id);
 
-        <TotalSupply<T>>::put(new_total_supply);
+        <AllKittiesCount<T>>::put(new_all_kitties_count);
 
         Ok(())
     }
