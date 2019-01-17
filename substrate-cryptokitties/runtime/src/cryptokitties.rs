@@ -63,14 +63,14 @@ decl_module! {
             Ok(())
         }
 
-        fn create_kitty(origin) -> Result {
+        fn create_kitty(origin, name: Vec<u8>) -> Result {
             let sender = ensure_signed(origin)?;
             let nonce = <Nonce<T>>::get();
             let random_hash = (<system::Module<T>>::random_seed(), &sender, nonce).using_encoded(<T as system::Trait>::Hashing::hash);
 
             let new_kitty = Kitty {
                                 id: random_hash,
-                                name: Vec::new(),
+                                name: name,
                                 dna: random_hash,
                                 price: <T::Balance as As<u64>>::sa(0),
                                 gen: 0,
@@ -129,7 +129,7 @@ decl_module! {
             Ok(())
         }
 
-        fn breed_cat(origin, token_id_1: T::Hash, token_id_2: T::Hash) -> Result{
+        fn breed_cat(origin, name: Vec<u8>, token_id_1: T::Hash, token_id_2: T::Hash) -> Result{
             let sender = ensure_signed(origin)?;
 
             ensure!(<Kitties<T>>::exists(token_id_1), "This cat 1 does not exist");
@@ -151,7 +151,7 @@ decl_module! {
 
             let new_kitty = Kitty {
                                 id: random_hash,
-                                name: Vec::new(),
+                                name: name,
                                 dna: final_dna,
                                 price: <T::Balance as As<u64>>::sa(0),
                                 gen: cmp::max(kitty_1.gen, kitty_2.gen) + 1,
