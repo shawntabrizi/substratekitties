@@ -197,6 +197,7 @@ impl sudo::Trait for Runtime {
 }
 
 impl cryptokitties::Trait for Runtime {
+	type Event = Event;
 }
 
 construct_runtime!(
@@ -212,7 +213,7 @@ construct_runtime!(
 		Indices: indices,
 		Balances: balances,
 		Sudo: sudo,
-		Cryptokitties: cryptokitties::{Module, Call, Storage},
+		Cryptokitties: cryptokitties::{Module, Call, Storage, Event<T>},
 	}
 );
 
