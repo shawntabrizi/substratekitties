@@ -11,7 +11,7 @@ pub struct Kitty<Hash, Balance> {
     name: Vec<u8>,
     dna: Hash,
     price: Balance,
-    gen: u32,
+    gen: u64,
 }
 
 pub trait Trait: balances::Trait {
@@ -29,7 +29,7 @@ decl_event!(
 );
 
 decl_storage! {
-    trait Store for Module<T: Trait> as ERC721Storage {
+    trait Store for Module<T: Trait> as KittyStorage {
         OwnedTokensCount get(balance_of): map T::AccountId => u64;
         TokenOwner get(owner_of): map T::Hash => Option<T::AccountId>;
 
