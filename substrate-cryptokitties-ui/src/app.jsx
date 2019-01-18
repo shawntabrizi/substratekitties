@@ -211,11 +211,11 @@ export class App extends ReactiveComponent {
 					<Icon name='paw' />
 					<Header.Content>
 						Cryptokitties on Substrate
-						<Header.Subheader>There are <Pretty value={runtime.cryptokitties.kittiesCount}/> kitties purring.</Header.Subheader>
+						<Header.Subheader>There are <Pretty value={runtime.cryptokitties.allKittiesCount}/> kitties purring.</Header.Subheader>
 					</Header.Content>
 				</Header>
 				<div style={{ paddingBottom: '1em' }}></div>
-				<KittyCards value={runtime.cryptokitties.kittiesCount}/>
+				<KittyCards count={runtime.cryptokitties.allKittiesCount}/>
 				<div style={{ paddingBottom: '1em' }}></div>
 				<SignerBond bond={this.ckaccount} />
 				<If condition={this.ckaccount.ready()} then={<div>
@@ -226,7 +226,6 @@ export class App extends ReactiveComponent {
 					</Label>
 					<Label>Kitties
 						<Label.Detail>
-							<Pretty value={runtime.cryptokitties.ownerToKitties(this.ckaccount)} />
 						</Label.Detail>
 					</Label>
 				</div>} />

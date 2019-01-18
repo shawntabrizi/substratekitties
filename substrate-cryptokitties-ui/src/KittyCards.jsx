@@ -4,51 +4,79 @@ const { Pretty } = require('./Pretty');
 import { Card, Icon, Image } from 'semantic-ui-react'
 import { pretty } from 'oo7-substrate';
 
-export class KittyCards extends ReactiveComponent {
-    constructor() {
-        super(["value"])
-        this.state.kittyArray = []
+
+function KittyImage(props) {
+    // FIXME: actually render a kitty based on DNA
+    return <span>Image</span>
+}
+
+class KittyCard extends ReactiveComponent {
+    constructor(props) {
+        super(['kitty'])
     }
 
-    componentDidMount() {
-        this.getKitties()
-    }
+    render() {
+        let item = this.state.kitty;
+        if (!item) {
+            return <Card>
+                    <span>loading</span>
+                </Card>;
+        }
 
-    getKitties() {
-        runtime.cryptokitties.kittiesCount
-        .then(num => {
-            for(let i=0; i < this.state.value; i ++) {
-                runtime.cryptokitties.kitties(i)
-                .then(cat => {
-                    this.setState({kittyArray:[...this.state.kittyArray, cat]});
-                })
-            }
-        })
-    }
+        // console.log(item);
 
-    renderKitties() {
-        return this.state.kittyArray.map((item,i) =>
-                    <div class="column">
-                    <Card>
-                    <Image src={'https://robohash.org/' + i + '.png?set=set4'} />
+        return <Card>
+                    <KittyImage dna={item.dna.toString()} />
                     <Card.Content>
-                    <Card.Header>{item.name}</Card.Header>
-                    <Card.Meta>
-                        <span className='date'>{i}</span>
-                    </Card.Meta>
-                    <Card.Description><span>{item.dna.toString().substring(0,3)}</span></Card.Description>
+                        <Card.Header>{item.name.toString()}</Card.Header>
+                        <Card.Description><span>{item.dna.toString()}</span></Card.Description>
+                        </Card.Content>
+                        <Card.Content extra>
+                        <a>
+                            <Icon name='dollar' />
+                            {item.price.toString()}
+                        </a>
                     </Card.Content>
-                    <Card.Content extra>
-                    <a>
-                        <Icon name='dollar' />
-                        {item.price.toString()}
-                    </a>
-                    </Card.Content>
-                </Card>
-                </div>)
-      }
+                </Card>;
+    }
+}
 
-    readyRender() {
-        return <div class="ui stackable twelve column grid">{this.renderKitties()}</div>
+class Kitty extends ReactiveComponent {
+    constructor(props) {
+        super(['hash'])
+    }
+
+    render() {
+        // one level of indirection: convert a given hash
+        // to the request of the actual kitty data
+        let hash = this.state.hash;
+        if (!hash) {
+            return <Card>
+                    <span>loading</span>
+                </Card>;
+        }
+
+        return <KittyCard kitty={runtime.cryptokitties.kitties(hash)} />
+    }
+}
+export class KittyCards extends ReactiveComponent {
+    constructor(props) {
+        super(['count'])
+    }
+    render() {
+        if (!this.state.count) {
+            return <span>No kittens found yet</span>
+        }
+
+        let kitties = [];
+        for (var i=0; i < this.state.count; i++){
+            kitties.push(
+                <div className="column" key={i}>
+                    <Kitty hash={runtime.cryptokitties.allKittiesArray(i)} />
+                </div>
+            );
+        }
+        
+        return <div className="ui stackable twelve column grid">{kitties}</div>;
     }
 }
