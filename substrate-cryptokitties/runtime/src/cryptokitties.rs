@@ -26,8 +26,8 @@ decl_event!(
         <T as balances::Trait>::Balance
     {
         Created(AccountId, Hash),
-        Transferred(AccountId, AccountId, Hash),
         PriceSet(AccountId, Hash, Balance),
+        Transferred(AccountId, AccountId, Hash),
         Bought(AccountId, AccountId, Hash, Balance),
     }
 );
