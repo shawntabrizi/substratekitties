@@ -22,12 +22,13 @@ decl_event!(
     pub enum Event<T>
     where
         <T as system::Trait>::AccountId,
-        <T as system::Trait>::Hash
+        <T as system::Trait>::Hash,
+        <T as balances::Trait>::Balance
     {
         Created(AccountId, Hash),
         Transferred(AccountId, AccountId, Hash),
-        Bought(AccountId, AccountId, Hash),
-        PriceSet(AccountId, Hash),
+        Bought(AccountId, AccountId, Hash, Balance),
+        PriceSet(AccountId, Hash, Balance),
     }
 );
 
@@ -36,11 +37,11 @@ decl_storage! {
         Kitties get(kitty): map T::Hash => Kitty<T::Hash, T::Balance>;
         KittyOwner get(owner_of): map T::Hash => Option<T::AccountId>;
 
-        AllKitties get(kitty_by_index): map u64 => T::Hash;
+        AllKittiesArray get(kitty_by_index): map u64 => T::Hash;
         AllKittiesCount get(all_kitties_count): u64;
         AllKittiesIndex: map T::Hash => u64;
 
-        OwnedKitties get(kitty_of_owner_by_index): map (T::AccountId, u64) => T::Hash;
+        OwnedKittiesArray get(kitty_of_owner_by_index): map (T::AccountId, u64) => T::Hash;
         OwnedKittiesCount get(owned_kitty_count): map T::AccountId => u64;
         OwnedKittiesIndex: map T::Hash => u64;
         
@@ -81,8 +82,8 @@ decl_module! {
                                 gen: 0,
                             };
 
-            Self::_mint(sender, random_hash)?;
-            <Kitties<T>>::insert(random_hash, new_kitty);
+            Self::_mint(sender, random_hash, new_kitty)?;
+            
             <Nonce<T>>::mutate(|n| *n += 1);
 
             Ok(())
@@ -104,7 +105,7 @@ decl_module! {
 
             <Kitties<T>>::insert(kitty_id, kitty);
 
-            Self::deposit_event(RawEvent::PriceSet(sender, kitty_id));
+            Self::deposit_event(RawEvent::PriceSet(sender, kitty_id, new_price));
 
             Ok(())
         }
@@ -121,19 +122,21 @@ decl_module! {
             ensure!(owner != sender, "You can't buy your own cat");
 
             let mut kitty = Self::kitty(kitty_id);
-            ensure!(!kitty.price.is_zero(), "The cat you want to buy is not for sale");
-            ensure!(kitty.price < max_price, "The cat you want to buy costs more than your max price");
+
+            let kitty_price = kitty.price;
+            ensure!(!kitty_price.is_zero(), "The cat you want to buy is not for sale");
+            ensure!(kitty_price < max_price, "The cat you want to buy costs more than your max price");
 
             // TODO: This payment logic needs to be updated
-            <balances::Module<T>>::decrease_free_balance(&sender, kitty.price)?;
-            <balances::Module<T>>::increase_free_balance_creating(&owner, kitty.price);
+            <balances::Module<T>>::decrease_free_balance(&sender, kitty_price)?;
+            <balances::Module<T>>::increase_free_balance_creating(&owner, kitty_price);
 
             Self::_transfer_from(owner.clone(), sender.clone(), kitty_id)?;
 
             kitty.price = <T::Balance as As<u64>>::sa(0);
             <Kitties<T>>::insert(kitty_id, kitty);
 
-            Self::deposit_event(RawEvent::Bought(sender, owner, kitty_id));
+            Self::deposit_event(RawEvent::Bought(sender, owner, kitty_id, kitty_price));
 
             Ok(())
         }
@@ -167,9 +170,8 @@ decl_module! {
                                 gen: cmp::max(kitty_1.gen, kitty_2.gen) + 1,
                             };
 
-            Self::_mint(sender, random_hash)?;
+            Self::_mint(sender, random_hash, new_kitty)?;
 
-            <Kitties<T>>::insert(random_hash, new_kitty);
             <Nonce<T>>::mutate(|n| *n += 1);
 
             Ok(())
@@ -178,7 +180,7 @@ decl_module! {
 }
 
 impl<T: Trait> Module<T> {
-    fn _mint(to: T::AccountId, kitty_id: T::Hash) -> Result {
+    fn _mint(to: T::AccountId, kitty_id: T::Hash, new_kitty: Kitty<T::Hash, T::Balance>) -> Result {
         ensure!(!<KittyOwner<T>>::exists(kitty_id), "Kitty already exists");
 
         let owned_kitty_count = Self::owned_kitty_count(&to);
@@ -188,11 +190,23 @@ impl<T: Trait> Module<T> {
             None => return Err("Overflow adding a new kitty to account balance"),
         };
 
-        Self::_add_kitty_to_all_kitties_enumeration(kitty_id)?;
-        Self::_add_kitty_to_owner_enumeration(to.clone(), kitty_id)?;
+        let all_kitties_count = Self::all_kitties_count();
 
+        let new_all_kitties_count = match all_kitties_count.checked_add(1) {
+            Some (c) => c,
+            None => return Err("Overflow adding a new kitty to total supply"),
+        };
+
+        <Kitties<T>>::insert(kitty_id, new_kitty);
         <KittyOwner<T>>::insert(kitty_id, &to);
+
+        <AllKittiesArray<T>>::insert(all_kitties_count, kitty_id);
+        <AllKittiesCount<T>>::put(new_all_kitties_count);
+        <AllKittiesIndex<T>>::insert(kitty_id, all_kitties_count);
+
+        <OwnedKittiesArray<T>>::insert((to.clone(), owned_kitty_count), kitty_id);
         <OwnedKittiesCount<T>>::insert(&to, new_owned_kitty_count);
+        <OwnedKittiesIndex<T>>::insert(kitty_id, owned_kitty_count);
 
         Self::deposit_event(RawEvent::Created(to, kitty_id));
 
@@ -210,98 +224,35 @@ impl<T: Trait> Module<T> {
         let owned_kitty_count_from = Self::owned_kitty_count(&from);
         let owned_kitty_count_to = Self::owned_kitty_count(&to);
 
-        let new_owned_kitty_count_from = match owned_kitty_count_from.checked_sub(1) {
-            Some (c) => c,
-            None => return Err("Transfer causes underflow of 'from' kitty balance"),
-        };
-
         let new_owned_kitty_count_to = match owned_kitty_count_to.checked_add(1) {
             Some(c) => c,
             None => return Err("Transfer causes overflow of 'to' kitty balance"),
         };
 
-        Self::_remove_kitty_from_owner_enumeration(from.clone(), kitty_id)?;
-        Self::_add_kitty_to_owner_enumeration(to.clone(), kitty_id)?;
-
-        <OwnedKittiesCount<T>>::insert(&from, new_owned_kitty_count_from);
-        <OwnedKittiesCount<T>>::insert(&to, new_owned_kitty_count_to);
-        <KittyOwner<T>>::insert(&kitty_id, &to);
-
-        Self::deposit_event(RawEvent::Transferred(from, to, kitty_id));
-        
-        Ok(())
-    }
-
-    fn _add_kitty_to_owner_enumeration(to: T::AccountId, kitty_id: T::Hash) -> Result {
-        let new_kitty_index = Self::owned_kitty_count(&to);
-
-        <OwnedKittiesIndex<T>>::insert(kitty_id, new_kitty_index);
-        <OwnedKitties<T>>::insert((to, new_kitty_index), kitty_id);
-
-        Ok(())
-    }
-
-    fn _add_kitty_to_all_kitties_enumeration(kitty_id: T::Hash) -> Result {
-        let all_kitties_count = Self::all_kitties_count();
-
-        let new_all_kitties_count = match all_kitties_count.checked_add(1) {
-            Some (c) => c,
-            None => return Err("Overflow when adding new kitty to total supply"),
-        };
-
-        let new_kitty_index = all_kitties_count;
-
-        <AllKittiesIndex<T>>::insert(kitty_id, new_kitty_index);
-        <AllKitties<T>>::insert(new_kitty_index, kitty_id);
-        <AllKittiesCount<T>>::put(new_all_kitties_count);
-
-        Ok(())
-    }
-
-    fn _remove_kitty_from_owner_enumeration(from: T::AccountId, kitty_id: T::Hash) -> Result {
-        let owned_kitty_count_from = Self::owned_kitty_count(&from);
-
-        let last_kitty_index = match owned_kitty_count_from.checked_sub(1) {
+        let new_owned_kitty_count_from = match owned_kitty_count_from.checked_sub(1) {
             Some (c) => c,
             None => return Err("Transfer causes underflow of 'from' kitty balance"),
         };
-        
-        let kitty_index = <OwnedKittiesIndex<T>>::get(kitty_id);
 
-        if kitty_index != last_kitty_index {
-            let last_kitty_id = <OwnedKitties<T>>::get((from.clone(), last_kitty_index));
-            <OwnedKitties<T>>::insert((from.clone(), kitty_index), last_kitty_id);
+        // "Swap and pop"
+        let kitty_index = <OwnedKittiesIndex<T>>::get(kitty_id);
+        if kitty_index != new_owned_kitty_count_from {
+            let last_kitty_id = <OwnedKittiesArray<T>>::get((from.clone(), new_owned_kitty_count_from));
+            <OwnedKittiesArray<T>>::insert((from.clone(), kitty_index), last_kitty_id);
             <OwnedKittiesIndex<T>>::insert(last_kitty_id, kitty_index);
         }
 
-        <OwnedKitties<T>>::remove((from, last_kitty_index));
-        <OwnedKittiesIndex<T>>::remove(kitty_id);
+        <KittyOwner<T>>::insert(&kitty_id, &to);
+        <OwnedKittiesIndex<T>>::insert(kitty_id, owned_kitty_count_to);
 
-        Ok(())
-    }
+        <OwnedKittiesArray<T>>::remove((from.clone(), new_owned_kitty_count_from));
+        <OwnedKittiesArray<T>>::insert((to.clone(), owned_kitty_count_to), kitty_id);
 
-    fn _remove_kitty_from_all_kitties_enumeration(kitty_id: T::Hash) -> Result {
-        let all_kitties_count = Self::all_kitties_count();
-
-        let new_all_kitties_count = match all_kitties_count.checked_sub(1) {
-            Some(c) => c,
-            None => return Err("Underflow removing kitty from total supply"),
-        };
-
-        let last_kitty_index = new_all_kitties_count;
-
-        let kitty_index = <AllKittiesIndex<T>>::get(kitty_id);
-
-        let last_kitty_id = <AllKitties<T>>::get(last_kitty_index);
-
-        <AllKitties<T>>::insert(kitty_index, last_kitty_id);
-        <AllKittiesIndex<T>>::insert(last_kitty_id, kitty_index);
-
-        <AllKitties<T>>::remove(last_kitty_index);
-        <AllKittiesIndex<T>>::remove(kitty_id);
-
-        <AllKittiesCount<T>>::put(new_all_kitties_count);
-
+        <OwnedKittiesCount<T>>::insert(&from, new_owned_kitty_count_from);
+        <OwnedKittiesCount<T>>::insert(&to, new_owned_kitty_count_to);
+        
+        Self::deposit_event(RawEvent::Transferred(from, to, kitty_id));
+        
         Ok(())
     }
 }
