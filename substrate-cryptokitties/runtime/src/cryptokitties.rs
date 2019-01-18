@@ -27,8 +27,8 @@ decl_event!(
     {
         Created(AccountId, Hash),
         Transferred(AccountId, AccountId, Hash),
-        Bought(AccountId, AccountId, Hash, Balance),
         PriceSet(AccountId, Hash, Balance),
+        Bought(AccountId, AccountId, Hash, Balance),
     }
 );
 
