@@ -3,6 +3,7 @@ import { ReactiveComponent } from 'oo7-react';
 const { Pretty } = require('./Pretty');
 import { Card, Icon, Image } from 'semantic-ui-react'
 import { pretty } from 'oo7-substrate';
+import { BalanceBond } from "./BalanceBond";
 
 
 function KittyImage(props) {
@@ -23,19 +24,16 @@ class KittyCard extends ReactiveComponent {
                 </Card>;
         }
 
-        // console.log(item);
+        console.log(item);
 
         return <Card>
-                    <KittyImage dna={item.dna.toString()} />
+                    <KittyImage dna={item.dna} />
                     <Card.Content>
-                        <Card.Header>{item.name.toString()}</Card.Header>
-                        <Card.Description><span>{item.dna.toString()}</span></Card.Description>
+                        <Card.Header><Pretty value={item.name} /></Card.Header>
+                        <Card.Description><span><Pretty value={item.dna} /></span></Card.Description>
                         </Card.Content>
                         <Card.Content extra>
-                        <a>
-                            <Icon name='dollar' />
-                            {item.price.toString()}
-                        </a>
+                        <Pretty value={item.price} prefix="$" />
                     </Card.Content>
                 </Card>;
     }
