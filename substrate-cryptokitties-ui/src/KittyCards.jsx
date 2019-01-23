@@ -1,9 +1,10 @@
 import React from 'react';
-import { ReactiveComponent } from 'oo7-react';
+import { ReactiveComponent, Rspan, Hash } from 'oo7-react';
 const { Pretty } = require('./Pretty');
 import { Card, Icon, Image } from 'semantic-ui-react'
-import { pretty } from 'oo7-substrate';
+import { pretty, runtime, secretStore } from 'oo7-substrate';
 import { BalanceBond } from "./BalanceBond";
+import Identicon from 'polkadot-identicon';
 
 const IMAGES = {
     accessories: [
@@ -94,7 +95,6 @@ function dnaToAttributes(dna) {
         let cur = 0;
         for (var idx = frm; idx < (frm + steps); idx++) {
             cur += dna[idx];
-            console.log(idx, frm, steps);
         } 
         return cur % steps
     };
@@ -109,7 +109,6 @@ function dnaToAttributes(dna) {
 } 
 
 function KittyImage(props) {
-    // FIXME: actually render a kitty based on DNA
     let outerStyle = {height: "150px", position: 'relative', width: "50%"},
         innerStyle = {height: "150px", position: 'absolute', top: '0%', left: '50%'};
 
@@ -125,70 +124,73 @@ function KittyImage(props) {
     </div>
 }
 
+class Owner extends ReactiveComponent {
+    constructor(props) {
+        super(['owner'])
+    }
+    readyRender() {
+        return <div>
+                <span className='ui avatar image' style={{minWidth: '36px'}}>
+                    <Identicon address={this.state.owner} />
+                </span><Rspan>
+                    {runtime.indices.ss58Encode(runtime.indices.tryIndex(this.state.owner))}
+                </Rspan>
+            </div>;
+    }
+}
+
 class KittyCard extends ReactiveComponent {
     constructor(props) {
-        super(['kitty'])
+        super(['kitty', 'owner'])
     }
 
-    render() {
-        let item = this.state.kitty;
-        if (!item) {
-            return <Card>
-                    <span>loading</span>
-                </Card>;
-        }
-
-        console.log(item);
+    readyRender() {
+        let kitty = this.state.kitty;
 
         return <Card>
-                    <KittyImage dna={item.dna} />
+                    <KittyImage dna={kitty.dna} />
                     <Card.Content>
-                        <Card.Header><Pretty value={item.name} /></Card.Header>
-                        <Card.Description><span><Pretty value={item.dna} /></span></Card.Description>
-                        </Card.Content>
-                        <Card.Content extra>
-                        <Pretty value={item.price} prefix="$" />
+                        <Card.Header><Pretty value={runtime.indices.ss58Encode(kitty.id)} /></Card.Header>
+                        <Owner owner={this.state.owner} />
+                    </Card.Content>
+                    <Card.Content extra>
+                        <Pretty value={kitty.price} prefix="$" />
                     </Card.Content>
                 </Card>;
     }
 }
 
-class Kitty extends ReactiveComponent {
+class KittyWrap extends ReactiveComponent {
     constructor(props) {
         super(['hash'])
     }
 
-    render() {
+    readyRender() {
         // one level of indirection: convert a given hash
         // to the request of the actual kitty data
-        let hash = this.state.hash;
-        if (!hash) {
-            return <Card>
-                    <span>loading</span>
-                </Card>;
-        }
-
-        return <KittyCard kitty={runtime.cryptokitties.kitties(hash)} />
+        return <KittyCard
+            kitty={runtime.cryptokitties.kitties(this.state.hash)}
+            owner={runtime.cryptokitties.kittyOwner(this.state.hash)}
+        />
     }
 }
 export class KittyCards extends ReactiveComponent {
     constructor(props) {
         super(['count'])
     }
-    render() {
-        if (!this.state.count) {
-            return <span>No kittens found yet</span>
-        }
-
+    unreadyRender() {
+        return <span>No kittens found yet</span>
+    }
+    readyRender() {
         let kitties = [];
         for (var i=0; i < this.state.count; i++){
             kitties.push(
                 <div className="column" key={i}>
-                    <Kitty hash={runtime.cryptokitties.allKittiesArray(i)} />
+                    <KittyWrap hash={runtime.cryptokitties.allKittiesArray(i)} />
                 </div>
             );
         }
         
-        return <div className="ui stackable five column grid">{kitties}</div>;
+        return <div className="ui stackable six column grid">{kitties}</div>;
     }
 }

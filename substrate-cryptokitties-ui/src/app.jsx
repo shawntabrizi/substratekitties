@@ -44,7 +44,14 @@ export class App extends ReactiveComponent {
 		this.ckkitty = new Bond;
 		this.ckprice = new Bond;
 
-		addCodecTransform('Kitty<Hash,Balance>', { name: 'Vec<u8>', dna: 'Hash', price: 'Balance' });
+
+		addCodecTransform('Kitty<Hash,Balance>', { 
+			id: 'Hash',
+			name: 'Vec<u8>',
+			dna: 'Hash',
+			price: 'Balance',
+			gen: 'u64'
+		});
 	}
 
 	readyRender() {
