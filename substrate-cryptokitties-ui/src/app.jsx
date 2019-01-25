@@ -217,49 +217,13 @@ export class App extends ReactiveComponent {
 				<Header as='h2'>
 					<Icon name='paw' />
 					<Header.Content>
-						Cryptokitties on Substrate
+						Substrate Kitties
 						<Header.Subheader>There are <Pretty value={runtime.cryptokitties.allKittiesCount}/> kitties purring.</Header.Subheader>
 					</Header.Content>
 				</Header>
 				<div style={{ paddingBottom: '1em' }}></div>
 				<KittyCards count={runtime.cryptokitties.allKittiesCount}/>
 				<div style={{ paddingBottom: '1em' }}></div>
-				<SignerBond bond={this.ckaccount} />
-				<If condition={this.ckaccount.ready()} then={<div>
-					<Label>Balance
-						<Label.Detail>
-							<Pretty value={runtime.balances.balance(this.ckaccount)} />
-						</Label.Detail>
-					</Label>
-					<Label>Kitties
-						<Label.Detail>
-						</Label.Detail>
-					</Label>
-				</div>} />
-
-				<div style={{ paddingBottom: '1em' }}>
-					<div style={{ fontSize: 'small' }}>kitty</div>
-					<InputBond
-						bond={this.ckkitty}
-						reversible
-						placeholder='Kitty ID'
-						validator={n => n || null}
-						iconPosition='left'
-						icon="paw"
-					/>
-				</div>
-				<div style={{ paddingBottom: '1em' }}>
-					<div style={{ fontSize: 'small' }}>amount</div>
-					<BalanceBond bond={this.ckprice} />
-				</div>
-				<TransactButton
-					content="Send"
-					icon='send'
-					tx={{
-						sender: runtime.indices.tryIndex(this.ckaccount),
-						call: calls.cryptokitties.setPrice(this.ckkitty, this.ckprice)
-					}}
-				/>
 			</Segment>
 		</div>);
 	}
