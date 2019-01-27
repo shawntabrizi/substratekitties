@@ -6,6 +6,7 @@ import { pretty, runtime, secretStore } from 'oo7-substrate';
 import { BalanceBond } from "./BalanceBond";
 import Identicon from 'polkadot-identicon';
 import { KittyAvatar } from './avatars';
+import './KittyCards.css'
 
 class KittyCard extends ReactiveComponent {
     constructor(props) {
@@ -18,11 +19,12 @@ class KittyCard extends ReactiveComponent {
         return <Card>
                     <KittyAvatar dna={kitty.dna} />
                     <Card.Content>
-                        <Card.Header><Pretty value={runtime.indices.ss58Encode(kitty.id)} /></Card.Header>
-                        <Identicon size="32" address={this.state.owner} />
+                        <Card.Header><Pretty value={kitty.id} className="limit-dna" /></Card.Header>
                         <Rspan>
-                            {runtime.indices.ss58Encode(runtime.indices.tryIndex(this.state.owner))}
+                            <b>Owner</b>: {secretStore().find(this.state.owner).name}
                         </Rspan>
+                        &nbsp;
+                        <Identicon key={this.state.owner} account={this.state.owner} size={16}/>
                     </Card.Content>
                     <Card.Content extra>
                         <Pretty value={kitty.price} prefix="$" />

@@ -41,8 +41,6 @@ export class App extends ReactiveComponent {
 		this.seedAccount.use()
 		this.runtime = new Bond;
 		this.ckaccount = new Bond;
-		this.ckkitty = new Bond;
-		this.ckprice = new Bond;
 
 		addCodecTransform('Kitty<Hash,Balance>', { 
 			id: 'Hash',
@@ -242,6 +240,15 @@ export class App extends ReactiveComponent {
 				<div style={{ paddingBottom: '1em' }}></div>
 				<KittyCards count={runtime.substratekitties.allKittiesCount}/>
 				<div style={{ paddingBottom: '1em' }}></div>
+				<SignerBond bond={this.ckaccount}/>
+				<TransactButton
+					content="Create Kitty"
+					icon='paw'
+					tx={{
+						sender: runtime.indices.tryIndex(this.ckaccount),
+						call: calls.substratekitties.createKitty()
+					}}
+				/>
 			</Segment>
 		</div>);
 	}
