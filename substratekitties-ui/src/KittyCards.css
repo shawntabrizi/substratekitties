@@ -1,6 +1,14 @@
+.limit-name {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
 .limit-dna {
     display: block;
-    width: 100px;
+    width: 10ch;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;

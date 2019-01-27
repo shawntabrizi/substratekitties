@@ -86,20 +86,17 @@ const IMAGES = {
 
 
 function dnaToAttributes(dna) {
-    let attribute = (frm, steps) => {
-        let cur = 0;
-        for (var idx = frm; idx < (frm + steps); idx++) {
-            cur += dna[idx];
-        } 
-        return cur % steps
+    let attribute = (index, options) => {
+        console.log(dna[index]);
+        return dna[index] % options
     };
 
     return {
-        body: IMAGES.body[attribute(0, 7)],
-        eyes: IMAGES.eyes[attribute(7, 7)],
-        accessory: IMAGES.accessories[attribute(14, 8)],
-        fur: IMAGES.fur[attribute(22, 5)],
-        mouth: IMAGES.mouth[attribute(27, 5)]
+        body: IMAGES.body[attribute(0, 15)],
+        eyes: IMAGES.eyes[attribute(1, 15)],
+        accessory: IMAGES.accessories[attribute(2, 20)],
+        fur: IMAGES.fur[attribute(3, 10)],
+        mouth: IMAGES.mouth[attribute(4, 10)]
     }
 } 
 
