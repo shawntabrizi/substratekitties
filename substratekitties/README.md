@@ -4,9 +4,10 @@ A new SRML-based Substrate node, ready for hacking.
 
 ## Setup
 
-* Install dependencies, build and run the node
+* Download and install Substrate and dependencies. Build and run the node
 
 ```
+curl https://getsubstrate.io -sSf | bash
 ./build.sh
 cargo build --release
 ./target/release/substratekitties --dev
