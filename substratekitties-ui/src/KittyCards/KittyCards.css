@@ -5,18 +5,3 @@
     white-space: nowrap;
     text-overflow: ellipsis;
 }
-
-.limit-dna {
-    display: block;
-    width: 10ch;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.kitty-image {
-    height: "150px";
-    position: 'absolute';
-    top: '0%';
-    left: '50%';
-}

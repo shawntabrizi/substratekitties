@@ -1,25 +1,25 @@
 import React from 'react';
 require('semantic-ui-css/semantic.min.css');
 const { generateMnemonic } = require('bip39')
-import {Icon, List, Label, Header, Segment, Divider, Button} from 'semantic-ui-react';
-import {Bond, TransformBond} from 'oo7';
-import {ReactiveComponent, If, Rspan} from 'oo7-react';
-import {calls, runtime, chain, system, runtimeUp, ss58Encode, addressBook, secretStore} from 'oo7-substrate';
+import { Icon, List, Label, Header, Segment, Divider, Button } from 'semantic-ui-react';
+import { Bond, TransformBond } from 'oo7';
+import { ReactiveComponent, If, Rspan } from 'oo7-react';
+import { calls, runtime, chain, system, runtimeUp, ss58Encode, addressBook, secretStore } from 'oo7-substrate';
 import Identicon from 'polkadot-identicon';
-import {AccountIdBond, SignerBond} from './AccountIdBond.jsx';
-import {BalanceBond} from './BalanceBond.jsx';
-import {InputBond} from './InputBond.jsx';
-import {TransactButton} from './TransactButton.jsx';
-import {FileUploadBond} from './FileUploadBond.jsx';
-import {StakingStatusLabel} from './StakingStatusLabel';
-import {WalletList, SecretItem} from './WalletList';
-import {AddressBookList} from './AddressBookList';
-import {TransformBondButton} from './TransformBondButton';
-import {Pretty} from './Pretty';
-import {KittyCards} from './KittyCards';
+import { AccountIdBond, SignerBond } from './AccountIdBond.jsx';
+import { BalanceBond } from './BalanceBond.jsx';
+import { InputBond } from './InputBond.jsx';
+import { TransactButton } from './TransactButton.jsx';
+import { FileUploadBond } from './FileUploadBond.jsx';
+import { StakingStatusLabel } from './StakingStatusLabel';
+import { WalletList, SecretItem } from './WalletList';
+import { AddressBookList } from './AddressBookList';
+import { TransformBondButton } from './TransformBondButton';
+import { Pretty } from './Pretty';
+import { KittyCards } from './KittyCards';
 
 export class App extends ReactiveComponent {
-	constructor () {
+	constructor() {
 		super([], { ensureRuntime: runtimeUp })
 
 		// For debug only.
@@ -41,8 +41,10 @@ export class App extends ReactiveComponent {
 		this.seedAccount.use()
 		this.runtime = new Bond;
 		this.skAccount = new Bond;
+		this.skKitty1 = new Bond;
+		this.skKitty2 = new Bond;
 
-		addCodecTransform('Kitty<Hash,Balance>', { 
+		addCodecTransform('Kitty<Hash,Balance>', {
 			id: 'Hash',
 			dna: 'Hash',
 			price: 'Balance',
@@ -54,26 +56,26 @@ export class App extends ReactiveComponent {
 		return (<div>
 			<div>
 				<Label>Name <Label.Detail>
-					<Pretty className="value" value={system.name}/> v<Pretty className="value" value={system.version}/>
+					<Pretty className="value" value={system.name} /> v<Pretty className="value" value={system.version} />
 				</Label.Detail></Label>
 				<Label>Chain <Label.Detail>
-					<Pretty className="value" value={system.chain}/>
+					<Pretty className="value" value={system.chain} />
 				</Label.Detail></Label>
 				<Label>Runtime <Label.Detail>
-					<Pretty className="value" value={runtime.version.specName}/> v<Pretty className="value" value={runtime.version.specVersion}/> (
-						<Pretty className="value" value={runtime.version.implName}/> v<Pretty className="value" value={runtime.version.implVersion}/>
+					<Pretty className="value" value={runtime.version.specName} /> v<Pretty className="value" value={runtime.version.specVersion} /> (
+						<Pretty className="value" value={runtime.version.implName} /> v<Pretty className="value" value={runtime.version.implVersion} />
 					)
 				</Label.Detail></Label>
 				<Label>Height <Label.Detail>
-					<Pretty className="value" value={chain.height}/>
+					<Pretty className="value" value={chain.height} />
 				</Label.Detail></Label>
 				<Label>Authorities <Label.Detail>
 					<Rspan className="value">{
-						runtime.core.authorities.mapEach(a => <Identicon key={a} account={a} size={16}/>)
+						runtime.core.authorities.mapEach(a => <Identicon key={a} account={a} size={16} />)
 					}</Rspan>
 				</Label.Detail></Label>
 			</div>
-			<Segment style={{margin: '1em'}}>
+			<Segment style={{ margin: '1em' }}>
 				<Header as='h2'>
 					<Icon name='key' />
 					<Header.Content>
@@ -81,8 +83,8 @@ export class App extends ReactiveComponent {
 						<Header.Subheader>Manage your secret keys</Header.Subheader>
 					</Header.Content>
 				</Header>
-				<div style={{paddingBottom: '1em'}}>
-					<div style={{fontSize: 'small'}}>seed</div>
+				<div style={{ paddingBottom: '1em' }}>
+					<div style={{ fontSize: 'small' }}>seed</div>
 					<InputBond
 						bond={this.seed}
 						reversible
@@ -90,11 +92,11 @@ export class App extends ReactiveComponent {
 						validator={n => n || null}
 						action={<Button content="Another" onClick={() => this.seed.trigger(generateMnemonic())} />}
 						iconPosition='left'
-						icon={<i style={{opacity: 1}} className='icon'><Identicon account={this.seedAccount} size={28} style={{marginTop: '5px'}}/></i>}
+						icon={<i style={{ opacity: 1 }} className='icon'><Identicon account={this.seedAccount} size={28} style={{ marginTop: '5px' }} /></i>}
 					/>
 				</div>
-				<div style={{paddingBottom: '1em'}}>
-					<div style={{fontSize: 'small'}}>name</div>
+				<div style={{ paddingBottom: '1em' }}>
+					<div style={{ fontSize: 'small' }}>name</div>
 					<InputBond
 						bond={this.name}
 						placeholder='A name for this key'
@@ -107,12 +109,12 @@ export class App extends ReactiveComponent {
 						/>}
 					/>
 				</div>
-				<div style={{paddingBottom: '1em'}}>
-					<WalletList/>
+				<div style={{ paddingBottom: '1em' }}>
+					<WalletList />
 				</div>
 			</Segment>
 			<Divider hidden />
-			<Segment style={{margin: '1em'}} padded>
+			<Segment style={{ margin: '1em' }} padded>
 				<Header as='h2'>
 					<Icon name='search' />
 					<Header.Content>
@@ -120,29 +122,29 @@ export class App extends ReactiveComponent {
 						<Header.Subheader>Inspect the status of any account and name it for later use</Header.Subheader>
 					</Header.Content>
 				</Header>
-  				<div style={{paddingBottom: '1em'}}>
-					<div style={{fontSize: 'small'}}>lookup account</div>
-					<AccountIdBond bond={this.lookup}/>
+				<div style={{ paddingBottom: '1em' }}>
+					<div style={{ fontSize: 'small' }}>lookup account</div>
+					<AccountIdBond bond={this.lookup} />
 					<If condition={this.lookup.ready()} then={<div>
 						<Label>Balance
 							<Label.Detail>
-								<Pretty value={runtime.balances.balance(this.lookup)}/>
+								<Pretty value={runtime.balances.balance(this.lookup)} />
 							</Label.Detail>
 						</Label>
 						<Label>Nonce
 							<Label.Detail>
-								<Pretty value={runtime.system.accountNonce(this.lookup)}/>
+								<Pretty value={runtime.system.accountNonce(this.lookup)} />
 							</Label.Detail>
 						</Label>
 						<Label>Address
 							<Label.Detail>
-								<Pretty value={this.lookup}/>
+								<Pretty value={this.lookup} />
 							</Label.Detail>
 						</Label>
-					</div>}/>
+					</div>} />
 				</div>
-				<div style={{paddingBottom: '1em'}}>
-					<div style={{fontSize: 'small'}}>name</div>
+				<div style={{ paddingBottom: '1em' }}>
+					<div style={{ fontSize: 'small' }}>name</div>
 					<InputBond
 						bond={this.nick}
 						placeholder='A name for this address'
@@ -155,12 +157,12 @@ export class App extends ReactiveComponent {
 						/>}
 					/>
 				</div>
-				<div style={{paddingBottom: '1em'}}>
-					<AddressBookList/>
+				<div style={{ paddingBottom: '1em' }}>
+					<AddressBookList />
 				</div>
 			</Segment>
 			<Divider hidden />
-			<Segment style={{margin: '1em'}} padded>
+			<Segment style={{ margin: '1em' }} padded>
 				<Header as='h2'>
 					<Icon name='send' />
 					<Header.Content>
@@ -168,36 +170,36 @@ export class App extends ReactiveComponent {
 						<Header.Subheader>Send funds from your account to another</Header.Subheader>
 					</Header.Content>
 				</Header>
-  				<div style={{paddingBottom: '1em'}}>
-					<div style={{fontSize: 'small'}}>from</div>
-					<SignerBond bond={this.source}/>
+				<div style={{ paddingBottom: '1em' }}>
+					<div style={{ fontSize: 'small' }}>from</div>
+					<SignerBond bond={this.source} />
 					<If condition={this.source.ready()} then={<span>
 						<Label>Balance
 							<Label.Detail>
-								<Pretty value={runtime.balances.balance(this.source)}/>
+								<Pretty value={runtime.balances.balance(this.source)} />
 							</Label.Detail>
 						</Label>
 						<Label>Nonce
 							<Label.Detail>
-								<Pretty value={runtime.system.accountNonce(this.source)}/>
+								<Pretty value={runtime.system.accountNonce(this.source)} />
 							</Label.Detail>
 						</Label>
-					</span>}/>
+					</span>} />
 				</div>
-				<div style={{paddingBottom: '1em'}}>
-					<div style={{fontSize: 'small'}}>to</div>
-					<AccountIdBond bond={this.destination}/>
+				<div style={{ paddingBottom: '1em' }}>
+					<div style={{ fontSize: 'small' }}>to</div>
+					<AccountIdBond bond={this.destination} />
 					<If condition={this.destination.ready()} then={
 						<Label>Balance
 							<Label.Detail>
-								<Pretty value={runtime.balances.balance(this.destination)}/>
+								<Pretty value={runtime.balances.balance(this.destination)} />
 							</Label.Detail>
 						</Label>
-					}/>
+					} />
 				</div>
-				<div style={{paddingBottom: '1em'}}>
-					<div style={{fontSize: 'small'}}>amount</div>
-					<BalanceBond bond={this.amount}/>
+				<div style={{ paddingBottom: '1em' }}>
+					<div style={{ fontSize: 'small' }}>amount</div>
+					<BalanceBond bond={this.amount} />
 				</div>
 				<TransactButton
 					content="Send"
@@ -209,7 +211,7 @@ export class App extends ReactiveComponent {
 				/>
 			</Segment>
 			<Divider hidden />
-			<Segment style={{margin: '1em'}} padded>
+			<Segment style={{ margin: '1em' }} padded>
 				<Header as='h2'>
 					<Icon name='search' />
 					<Header.Content>
@@ -217,7 +219,7 @@ export class App extends ReactiveComponent {
 						<Header.Subheader>Upgrade the runtime using the Sudo module</Header.Subheader>
 					</Header.Content>
 				</Header>
-				<div style={{paddingBottom: '1em'}}></div>
+				<div style={{ paddingBottom: '1em' }}></div>
 				<FileUploadBond bond={this.runtime} content='Select Runtime' />
 				<TransactButton
 					content="Upgrade"
@@ -234,13 +236,13 @@ export class App extends ReactiveComponent {
 					<Icon name='paw' />
 					<Header.Content>
 						Substrate Kitties
-						<Header.Subheader>There are <Pretty value={runtime.substratekitties.allKittiesCount}/> kitties purring.</Header.Subheader>
+						<Header.Subheader>There are <Pretty value={runtime.substratekitties.allKittiesCount} /> kitties purring.</Header.Subheader>
 					</Header.Content>
 				</Header>
 				<div style={{ paddingBottom: '1em' }}></div>
-				<KittyCards count={runtime.substratekitties.allKittiesCount}/>
+				<KittyCards count={runtime.substratekitties.allKittiesCount} />
 				<div style={{ paddingBottom: '1em' }}></div>
-				<SignerBond bond={this.skAccount}/>
+				<SignerBond bond={this.skAccount} />
 				<TransactButton
 					content="Create Kitty"
 					icon='paw'
@@ -249,6 +251,31 @@ export class App extends ReactiveComponent {
 						call: calls.substratekitties.createKitty()
 					}}
 				/>
+				<div style={{ paddingBottom: '1em' }}></div>
+				<If condition={calls.substratekitties.breedKitty} then={<div>
+					<InputBond
+						bond={this.skKitty1}
+						placeholder='Kitty ID 1'
+						validator={n => (n.substr(0, 2) == '0x' && n.length == 66) ? n : null}
+						iconPosition='left'
+						icon='paw'
+					/>
+					<InputBond
+						bond={this.skKitty2}
+						placeholder='Kitty ID 2'
+						validator={n => (n.substr(0, 2) == '0x' && n.length == 66) ? n : null}
+						iconPosition='left'
+						icon='paw'
+					/>
+					<TransactButton
+						content="Breed a Kitty"
+						icon='paw'
+						tx={{
+							sender: runtime.indices.tryIndex(this.skAccount),
+							call: calls.substratekitties.breedKitty && calls.substratekitties.breedKitty(this.skKitty1, this.skKitty2)
+						}}
+					/>
+				</div>} />
 			</Segment>
 		</div>);
 	}
