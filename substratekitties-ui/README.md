@@ -1,4 +1,8 @@
-# Setup
+# Substratekitties UI
+
+## Setup
+
+* Run a Substratekitties Node
 
 * Install dependencies and run the app
 
