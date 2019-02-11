@@ -49,7 +49,7 @@ export class SecretItem extends ReactiveComponent {
 			/>
 			: <Popup trigger={<Icon
 				circular
-				className='eye slash'
+				name='eye slash'
 				onClick={toggle}
 			/>} content='Click to uncover seed/secret' />
 	}
