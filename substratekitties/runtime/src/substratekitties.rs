@@ -1,8 +1,9 @@
 use parity_codec::Encode;
-use support::{StorageValue, StorageMap, dispatch::Result, 
-    decl_module, decl_storage, decl_event, ensure};
+use support::{decl_storage, decl_module, StorageValue, StorageMap,
+    dispatch::Result, ensure, decl_event};
 use system::ensure_signed;
 use runtime_primitives::traits::{As, Hash, Zero};
+use parity_codec_derive::{Encode, Decode};
 use rstd::cmp;
 
 #[derive(Encode, Decode, Default, Clone, PartialEq)]
