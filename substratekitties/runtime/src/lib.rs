@@ -7,7 +7,7 @@
 
 #[cfg(feature = "std")]
 use serde_derive::{Serialize, Deserialize};
-use parity_codec_derive::{Encode, Decode};
+use parity_codec::{Encode, Decode};
 use rstd::prelude::*;
 #[cfg(feature = "std")]
 use primitives::bytes;
@@ -84,7 +84,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	apis: RUNTIME_API_VERSIONS,
 };
 
-/// The version infromation used to identify this runtime when compiled natively.
+/// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
 pub fn native_version() -> NativeVersion {
 	NativeVersion {
@@ -157,8 +157,6 @@ impl balances::Trait for Runtime {
 	type OnFreeBalanceZero = ();
 	/// What to do if a new account is created.
 	type OnNewAccount = Indices;
-	/// Restrict whether an account can transfer funds. We don't place any further restrictions.
-	type EnsureAccountLiquid = ();
 	/// The uniquitous event type.
 	type Event = Event;
 }
