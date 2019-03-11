@@ -116,6 +116,9 @@ decl_module! {
             ensure!(!kitty_price.is_zero(), "The cat you want to buy is not for sale");
             ensure!(kitty_price <= max_price, "The cat you want to buy costs more than your max price");
 
+            // Must ensure that kitty transfer (`Self::_transfer_from`) will succeed before transfering funds
+            Self::_ensure_account_can_transfer(owner.clone(), sender.clone(), kitty_id)?;
+
             <balances::Module<T>>::make_transfer(&sender, &owner, kitty_price)?;
 
             Self::_transfer_from(owner.clone(), sender.clone(), kitty_id)?;
@@ -196,6 +199,7 @@ impl<T: Trait> Module<T> {
     }
 
     fn _transfer_from(from: T::AccountId, to: T::AccountId, kitty_id: T::Hash) -> Result {
+        
         let owner = Self::owner_of(kitty_id).ok_or("No owner for this kitty")?;
 
         ensure!(owner == from, "'from' account does not own this kitty");
@@ -228,6 +232,26 @@ impl<T: Trait> Module<T> {
         
         Self::deposit_event(RawEvent::Transferred(from, to, kitty_id));
         
+        Ok(())
+    }
+
+    fn _ensure_account_can_transfer(from: T::AccountId, to: T::AccountId, kitty_id: T::Hash) -> Result {
+
+        let owner = Self::owner_of(kitty_id).ok_or("No owner for this kitty")?;
+
+        ensure!(owner == from, "'from' account does not own this kitty");
+
+        // TODO: Refactor so this returns `new_owned_kitty_count` to `_transfer_from`
+        // so that we are not reading the same thing from storage twice.
+        let owned_kitty_count_from = Self::owned_kitty_count(&from);
+        let owned_kitty_count_to = Self::owned_kitty_count(&to);
+
+        let _new_owned_kitty_count_to = owned_kitty_count_to.checked_add(1)
+            .ok_or("Transfer causes overflow of 'to' kitty balance")?;
+
+        let _new_owned_kitty_count_from = owned_kitty_count_from.checked_sub(1)
+            .ok_or("Transfer causes underflow of 'from' kitty balance")?;
+
         Ok(())
     }
 }
