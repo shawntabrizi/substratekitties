@@ -13,6 +13,14 @@ pub struct Kitty<Hash, Balance> {
     gen: u64,
 }
 
+#[derive(Encode, Decode, Default, Clone, PartialEq)]
+pub struct KittyOwnerUpdate {
+    owned_kitty_count_from: u64,
+    owned_kitty_count_to: u64,
+    new_owned_kitty_count_from: u64,
+    new_owned_kitty_count_to: u64,
+}
+
 pub trait Trait: balances::Trait {
     type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
 }
@@ -97,7 +105,9 @@ decl_module! {
             let owner = Self::owner_of(kitty_id).ok_or("No owner for this kitty")?;
             ensure!(owner == sender, "You do not own this kitty");
 
-            Self::_transfer_from(sender, to, kitty_id)?;
+            let owner_update = Self::_ensure_account_can_transfer(owner.clone(), sender.clone(), kitty_id)?;
+
+            Self::_transfer_from(sender, to, kitty_id, owner_update);
 
             Ok(())
         }
@@ -116,12 +126,11 @@ decl_module! {
             ensure!(!kitty_price.is_zero(), "The cat you want to buy is not for sale");
             ensure!(kitty_price <= max_price, "The cat you want to buy costs more than your max price");
 
-            // Must ensure that kitty transfer (`Self::_transfer_from`) will succeed before transfering funds
-            Self::_ensure_account_can_transfer(owner.clone(), sender.clone(), kitty_id)?;
+            let owner_update = Self::_ensure_account_can_transfer(owner.clone(), sender.clone(), kitty_id)?;
 
             <balances::Module<T>>::make_transfer(&sender, &owner, kitty_price)?;
 
-            Self::_transfer_from(owner.clone(), sender.clone(), kitty_id)?;
+            Self::_transfer_from(owner.clone(), sender.clone(), kitty_id, owner_update);
 
             kitty.price = <T::Balance as As<u64>>::sa(0);
             <Kitties<T>>::insert(kitty_id, kitty);
@@ -198,60 +207,58 @@ impl<T: Trait> Module<T> {
         Ok(())
     }
 
-    fn _transfer_from(from: T::AccountId, to: T::AccountId, kitty_id: T::Hash) -> Result {
-        
-        let owner = Self::owner_of(kitty_id).ok_or("No owner for this kitty")?;
-
-        ensure!(owner == from, "'from' account does not own this kitty");
-
-        let owned_kitty_count_from = Self::owned_kitty_count(&from);
-        let owned_kitty_count_to = Self::owned_kitty_count(&to);
-
-        let new_owned_kitty_count_to = owned_kitty_count_to.checked_add(1)
-            .ok_or("Transfer causes overflow of 'to' kitty balance")?;
-
-        let new_owned_kitty_count_from = owned_kitty_count_from.checked_sub(1)
-            .ok_or("Transfer causes underflow of 'from' kitty balance")?;
+    fn _transfer_from(from: T::AccountId, to: T::AccountId, kitty_id: T::Hash, owner_update: KittyOwnerUpdate) {
 
         // "Swap and pop"
         let kitty_index = <OwnedKittiesIndex<T>>::get(kitty_id);
-        if kitty_index != new_owned_kitty_count_from {
-            let last_kitty_id = <OwnedKittiesArray<T>>::get((from.clone(), new_owned_kitty_count_from));
+        if kitty_index != owner_update.new_owned_kitty_count_from {
+            let last_kitty_id = <OwnedKittiesArray<T>>::get((from.clone(), owner_update.new_owned_kitty_count_from));
             <OwnedKittiesArray<T>>::insert((from.clone(), kitty_index), last_kitty_id);
             <OwnedKittiesIndex<T>>::insert(last_kitty_id, kitty_index);
         }
 
         <KittyOwner<T>>::insert(&kitty_id, &to);
-        <OwnedKittiesIndex<T>>::insert(kitty_id, owned_kitty_count_to);
+        <OwnedKittiesIndex<T>>::insert(kitty_id, owner_update.owned_kitty_count_to);
 
-        <OwnedKittiesArray<T>>::remove((from.clone(), new_owned_kitty_count_from));
-        <OwnedKittiesArray<T>>::insert((to.clone(), owned_kitty_count_to), kitty_id);
+        <OwnedKittiesArray<T>>::remove((from.clone(), owner_update.new_owned_kitty_count_from));
+        <OwnedKittiesArray<T>>::insert((to.clone(), owner_update.owned_kitty_count_to), kitty_id);
 
-        <OwnedKittiesCount<T>>::insert(&from, new_owned_kitty_count_from);
-        <OwnedKittiesCount<T>>::insert(&to, new_owned_kitty_count_to);
+        <OwnedKittiesCount<T>>::insert(&from, owner_update.new_owned_kitty_count_from);
+        <OwnedKittiesCount<T>>::insert(&to, owner_update.new_owned_kitty_count_to);
         
         Self::deposit_event(RawEvent::Transferred(from, to, kitty_id));
-        
-        Ok(())
     }
 
-    fn _ensure_account_can_transfer(from: T::AccountId, to: T::AccountId, kitty_id: T::Hash) -> Result {
+    fn _ensure_account_can_transfer(from: T::AccountId, to: T::AccountId, kitty_id: T::Hash) -> core::result::Result<KittyOwnerUpdate, &'static str> {
 
         let owner = Self::owner_of(kitty_id).ok_or("No owner for this kitty")?;
 
-        ensure!(owner == from, "'from' account does not own this kitty");
+        ensure!(owner == from, "The from account does not own this kitty");
 
-        // TODO: Refactor so this returns `new_owned_kitty_count` to `_transfer_from`
-        // so that we are not reading the same thing from storage twice.
-        let owned_kitty_count_from = Self::owned_kitty_count(&from);
-        let owned_kitty_count_to = Self::owned_kitty_count(&to);
+        let count_from = Self::owned_kitty_count(&from);
+        let count_to = Self::owned_kitty_count(&to);
+        let new_count_from: u64;
+        let new_count_to: u64;
 
-        let _new_owned_kitty_count_to = owned_kitty_count_to.checked_add(1)
-            .ok_or("Transfer causes overflow of 'to' kitty balance")?;
+        if count_from > 0 {
+            new_count_from = count_from - 1;
+        } else {
+            return Err("Underflow removing kitty");
+        }
 
-        let _new_owned_kitty_count_from = owned_kitty_count_from.checked_sub(1)
-            .ok_or("Transfer causes underflow of 'from' kitty balance")?;
+        if count_to < u64::max_value() {
+            new_count_to = count_to + 1;
+        } else {
+            return Err("Overflow adding kitty");
+        }
 
-        Ok(())
+        let owned_count_update = KittyOwnerUpdate {
+            owned_kitty_count_from: count_from,
+            owned_kitty_count_to: count_to,
+            new_owned_kitty_count_from: new_count_from,
+            new_owned_kitty_count_to: new_count_to,
+        };
+
+        Ok(owned_count_update)
     }
 }
