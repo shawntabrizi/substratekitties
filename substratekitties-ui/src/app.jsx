@@ -18,6 +18,7 @@ import { WalletList, SecretItem } from './WalletList';
 import { AddressBookList } from './AddressBookList';
 import { TransformBondButton } from './TransformBondButton';
 import { Pretty } from './Pretty';
+import { KittyCards } from './KittyCards'
 
 export class App extends ReactiveComponent {
 	constructor() {
@@ -32,6 +33,13 @@ export class App extends ReactiveComponent {
 		window.system = system;
 		window.that = this;
 		window.metadata = metadata;
+
+		addCodecTransform('Kitty<Hash,Balance>', {
+			id: 'Hash',
+			dna: 'Hash',
+			price: 'Balance',
+			gen: 'u64'
+		});
 	}
 
 	readyRender() {
@@ -48,6 +56,8 @@ export class App extends ReactiveComponent {
 			<PokeSegment />
 			<Divider hidden />
 			<TransactionsSegment />
+			<Divider hidden />
+			<SubstratekittiesSegment />
 		</div>);
 	}
 }
@@ -303,14 +313,14 @@ class UpgradeSegment extends React.Component {
 }
 
 class PokeSegment extends React.Component {
-	constructor () {
+	constructor() {
 		super()
 		this.storageKey = new Bond;
 		this.storageValue = new Bond;
 	}
-	render () {
+	render() {
 		return <If condition={runtime.metadata.map(m => m.modules && m.modules.some(o => o.name === 'sudo'))} then={
-			<Segment style={{margin: '1em'}} padded>
+			<Segment style={{ margin: '1em' }} padded>
 				<Header as='h2'>
 					<Icon name='search' />
 					<Header.Content>
@@ -318,7 +328,7 @@ class PokeSegment extends React.Component {
 						<Header.Subheader>Set a particular key of storage to a particular value</Header.Subheader>
 					</Header.Content>
 				</Header>
-				<div style={{paddingBottom: '1em'}}></div>
+				<div style={{ paddingBottom: '1em' }}></div>
 				<InputBond bond={this.storageKey} placeholder='Storage key e.g. 0xf00baa' />
 				<InputBond bond={this.storageValue} placeholder='Storage value e.g. 0xf00baa' />
 				<TransactButton
@@ -330,19 +340,19 @@ class PokeSegment extends React.Component {
 					}}
 				/>
 			</Segment>
-		}/>		
+		} />
 	}
 }
 
 class TransactionsSegment extends React.Component {
-	constructor () {
+	constructor() {
 		super()
 
 		this.txhex = new Bond
 	}
 
-	render () {
-		return <Segment style={{margin: '1em'}} padded>
+	render() {
+		return <Segment style={{ margin: '1em' }} padded>
 			<Header as='h2'>
 				<Icon name='certificate' />
 				<Header.Content>
@@ -350,13 +360,72 @@ class TransactionsSegment extends React.Component {
 					<Header.Subheader>Send custom transactions</Header.Subheader>
 				</Header.Content>
 			</Header>
-			<div style={{paddingBottom: '1em'}}>
-				<div style={{paddingBottom: '1em'}}>
-					<div style={{fontSize: 'small'}}>Custom Transaction Data</div>
-					<InputBond bond={this.txhex}/>
+			<div style={{ paddingBottom: '1em' }}>
+				<div style={{ paddingBottom: '1em' }}>
+					<div style={{ fontSize: 'small' }}>Custom Transaction Data</div>
+					<InputBond bond={this.txhex} />
 				</div>
 				<TransactButton tx={this.txhex.map(hexToBytes)} content="Publish" icon="sign in" />
 			</div>
+		</Segment>
+	}
+}
+
+class SubstratekittiesSegment extends React.Component {
+	constructor() {
+		super()
+
+		this.skAccount = new Bond
+		this.skKitty1 = new Bond
+		this.skKitty2 = new Bond
+	}
+
+	render() {
+		return <Segment style={{ margin: '1em' }} padded>
+			<Header as='h2'>
+				<Icon name='paw' />
+				<Header.Content>
+					Substrate Kitties
+				<Header.Subheader>There are <Pretty value={runtime.substratekitties.allKittiesCount} /> kitties purring.</Header.Subheader>
+				</Header.Content>
+			</Header>
+			<div style={{ paddingBottom: '1em' }}></div>
+			<KittyCards count={runtime.substratekitties.allKittiesCount} />
+			<div style={{ paddingBottom: '1em' }}></div>
+			<SignerBond bond={this.skAccount} />
+			<TransactButton
+				content="Create Kitty"
+				icon='paw'
+				tx={{
+					sender: runtime.indices.tryIndex(this.skAccount),
+					call: calls.substratekitties.createKitty()
+				}}
+			/>
+			<div style={{ paddingBottom: '1em' }}></div>
+			<If condition={calls.substratekitties.breedKitty} then={<div>
+				<InputBond
+					bond={this.skKitty1}
+					placeholder='Kitty ID 1'
+					validator={n => (n.substr(0, 2) == '0x' && n.length == 66) ? n : null}
+					iconPosition='left'
+					icon='paw'
+				/>
+				<InputBond
+					bond={this.skKitty2}
+					placeholder='Kitty ID 2'
+					validator={n => (n.substr(0, 2) == '0x' && n.length == 66) ? n : null}
+					iconPosition='left'
+					icon='paw'
+				/>
+				<TransactButton
+					content="Breed a Kitty"
+					icon='paw'
+					tx={{
+						sender: runtime.indices.tryIndex(this.skAccount),
+						call: calls.substratekitties.breedKitty && calls.substratekitties.breedKitty(this.skKitty1, this.skKitty2)
+					}}
+				/>
+			</div>} />
 		</Segment>
 	}
 }
