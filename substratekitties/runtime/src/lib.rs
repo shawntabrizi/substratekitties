@@ -11,10 +11,10 @@ use parity_codec::{Encode, Decode};
 use rstd::prelude::*;
 #[cfg(feature = "std")]
 use primitives::bytes;
-use primitives::{Ed25519AuthorityId, OpaqueMetadata};
+use primitives::{ed25519, sr25519, OpaqueMetadata};
 use runtime_primitives::{
-	ApplyResult, transaction_validity::TransactionValidity, Ed25519Signature, generic,
-	traits::{self, BlakeTwo256, Block as BlockT, StaticLookup}, create_runtime_str
+	ApplyResult, transaction_validity::TransactionValidity, generic, create_runtime_str,
+	traits::{self, NumberFor, BlakeTwo256, Block as BlockT, StaticLookup, Verify}
 };
 use client::{
 	block_builder::api::{CheckInherentsResult, InherentData, self as block_builder_api},
@@ -34,8 +34,17 @@ pub use runtime_primitives::{Permill, Perbill};
 pub use timestamp::BlockPeriod;
 pub use support::{StorageValue, construct_runtime};
 
-/// Alias to Ed25519 pubkey that identifies an account on the chain.
-pub type AccountId = primitives::H256;
+/// The type that is used for identifying authorities.
+pub type AuthorityId = <AuthoritySignature as Verify>::Signer;
+
+/// The type used by authorities to prove their ID.
+pub type AuthoritySignature = ed25519::Signature;
+
+/// Alias to pubkey that identifies an account on the chain.
+pub type AccountId = <AccountSignature as Verify>::Signer;
+
+/// The type used by authorities to prove their ID.
+pub type AccountSignature = sr25519::Signature;
 
 /// A hash of some data used by the chain.
 pub type Hash = primitives::H256;
@@ -46,7 +55,8 @@ pub type BlockNumber = u64;
 /// Index of an account's extrinsic in the chain.
 pub type Nonce = u64;
 
-mod substratekitties;
+/// Used for the module template in `./template.rs`
+mod template;
 
 /// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
 /// the specifics of the runtime. They can then be made to be agnostic over specific formats
@@ -57,21 +67,27 @@ pub mod opaque {
 
 	/// Opaque, encoded, unchecked extrinsic.
 	#[derive(PartialEq, Eq, Clone, Default, Encode, Decode)]
-	#[cfg_attr(feature = "std", derive(Serialize, Deserialize, Debug))]
+	#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 	pub struct UncheckedExtrinsic(#[cfg_attr(feature = "std", serde(with="bytes"))] pub Vec<u8>);
+	#[cfg(feature = "std")]
+	impl std::fmt::Debug for UncheckedExtrinsic {
+		fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
+			write!(fmt, "{}", primitives::hexdisplay::HexDisplay::from(&self.0))
+		}
+	}
 	impl traits::Extrinsic for UncheckedExtrinsic {
 		fn is_signed(&self) -> Option<bool> {
 			None
 		}
 	}
 	/// Opaque block header type.
-	pub type Header = generic::Header<BlockNumber, BlakeTwo256, generic::DigestItem<Hash, Ed25519AuthorityId>>;
+	pub type Header = generic::Header<BlockNumber, BlakeTwo256, generic::DigestItem<Hash, AuthorityId, AuthoritySignature>>;
 	/// Opaque block type.
 	pub type Block = generic::Block<Header, UncheckedExtrinsic>;
 	/// Opaque block identifier type.
 	pub type BlockId = generic::BlockId<Block>;
 	/// Opaque session key type.
-	pub type SessionKey = Ed25519AuthorityId;
+	pub type SessionKey = AuthorityId;
 }
 
 /// This runtime version.
@@ -84,7 +100,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	apis: RUNTIME_API_VERSIONS,
 };
 
-/// The version information used to identify this runtime when compiled natively.
+/// The version infromation used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
 pub fn native_version() -> NativeVersion {
 	NativeVersion {
@@ -124,7 +140,7 @@ impl aura::Trait for Runtime {
 
 impl consensus::Trait for Runtime {
 	/// The identifier we use to refer to authorities.
-	type SessionKey = Ed25519AuthorityId;
+	type SessionKey = AuthorityId;
 	// The aura module handles offline-reports internally
 	// rather than using an explicit report system.
 	type InherentOfflineReport = ();
@@ -159,11 +175,10 @@ impl balances::Trait for Runtime {
 	type OnNewAccount = Indices;
 	/// The uniquitous event type.
 	type Event = Event;
-}
 
-impl fees::Trait for Runtime {
-	type TransferAsset = Balances;
-	type Event = Event;
+	type TransactionPayment = ();
+	type DustRemoval = ();
+	type TransferPayment = ();
 }
 
 impl sudo::Trait for Runtime {
@@ -172,12 +187,13 @@ impl sudo::Trait for Runtime {
 	type Proposal = Call;
 }
 
-impl substratekitties::Trait for Runtime {
+/// Used for the module template in `./template.rs`
+impl template::Trait for Runtime {
 	type Event = Event;
 }
 
 construct_runtime!(
-	pub enum Runtime with Log(InternalLog: DigestItem<Hash, Ed25519AuthorityId>) where
+	pub enum Runtime with Log(InternalLog: DigestItem<Hash, AuthorityId, AuthoritySignature>) where
 		Block = Block,
 		NodeBlock = opaque::Block,
 		UncheckedExtrinsic = UncheckedExtrinsic
@@ -189,8 +205,8 @@ construct_runtime!(
 		Indices: indices,
 		Balances: balances,
 		Sudo: sudo,
-		Fees: fees::{Module, Storage, Config<T>, Event<T>},
-		Substratekitties: substratekitties::{Module, Call, Storage, Event<T>},
+		// Used for the module template in `./template.rs`
+		TemplateModule: template::{Module, Call, Storage, Event<T>},
 	}
 );
 
@@ -205,11 +221,11 @@ pub type Block = generic::Block<Header, UncheckedExtrinsic>;
 /// BlockId type as expected by this runtime.
 pub type BlockId = generic::BlockId<Block>;
 /// Unchecked extrinsic type as expected by this runtime.
-pub type UncheckedExtrinsic = generic::UncheckedMortalCompactExtrinsic<Address, Nonce, Call, Ed25519Signature>;
+pub type UncheckedExtrinsic = generic::UncheckedMortalCompactExtrinsic<Address, Nonce, Call, AccountSignature>;
 /// Extrinsic type that has already been checked.
 pub type CheckedExtrinsic = generic::CheckedExtrinsic<AccountId, Nonce, Call>;
 /// Executive: handles dispatch to the various modules.
-pub type Executive = executive::Executive<Runtime, Block, Context, Fees, AllModules>;
+pub type Executive = executive::Executive<Runtime, Block, Context, Balances, AllModules>;
 
 // Implement our runtime API endpoints. This is just a bunch of proxying.
 impl_runtime_apis! {
@@ -218,16 +234,16 @@ impl_runtime_apis! {
 			VERSION
 		}
 
-		fn authorities() -> Vec<Ed25519AuthorityId> {
-			Consensus::authorities()
-		}
-
 		fn execute_block(block: Block) {
 			Executive::execute_block(block)
 		}
 
-		fn initialise_block(header: &<Block as BlockT>::Header) {
-			Executive::initialise_block(header)
+		fn initialize_block(header: &<Block as BlockT>::Header) {
+			Executive::initialize_block(header)
+		}
+
+		fn authorities() -> Vec<AuthorityId> {
+			panic!("Deprecated, please use `AuthoritiesApi`.")
 		}
 	}
 
@@ -242,8 +258,8 @@ impl_runtime_apis! {
 			Executive::apply_extrinsic(extrinsic)
 		}
 
-		fn finalise_block() -> <Block as BlockT>::Header {
-			Executive::finalise_block()
+		fn finalize_block() -> <Block as BlockT>::Header {
+			Executive::finalize_block()
 		}
 
 		fn inherent_extrinsics(data: InherentData) -> Vec<<Block as BlockT>::Extrinsic> {
@@ -268,6 +284,18 @@ impl_runtime_apis! {
 	impl consensus_aura::AuraApi<Block> for Runtime {
 		fn slot_duration() -> u64 {
 			Aura::slot_duration()
+		}
+	}
+
+	impl offchain_primitives::OffchainWorkerApi<Block> for Runtime {
+		fn offchain_worker(n: NumberFor<Block>) {
+			Executive::offchain_worker(n)
+		}
+	}
+
+	impl consensus_authorities::AuthoritiesApi<Block> for Runtime {
+		fn authorities() -> Vec<AuthorityId> {
+			Consensus::authorities()
 		}
 	}
 }
