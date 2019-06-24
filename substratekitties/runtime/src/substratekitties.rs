@@ -14,16 +14,19 @@ pub struct Kitty<Hash, Balance> {
     gen: u64,
 }
 
-pub trait Trait: balances::Trait {
+pub trait Trait: system::Trait {
     type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
+    type Currency: Currency<Self::AccountId>;
 }
+
+type BalanceOf<T> = <<T as Trait>::Currency as Currency<<T as system::Trait>::AccountId>>::Balance;
 
 decl_event!(
     pub enum Event<T>
     where
         <T as system::Trait>::AccountId,
         <T as system::Trait>::Hash,
-        <T as balances::Trait>::Balance
+        Balance = BalanceOf<T>,
     {
         Created(AccountId, Hash),
         PriceSet(AccountId, Hash, Balance),
@@ -34,7 +37,7 @@ decl_event!(
 
 decl_storage! {
     trait Store for Module<T: Trait> as KittyStorage {
-        Kitties get(kitty): map T::Hash => Kitty<T::Hash, T::Balance>;
+        Kitties get(kitty): map T::Hash => Kitty<T::Hash, BalanceOf<T>>;
         KittyOwner get(owner_of): map T::Hash => Option<T::AccountId>;
 
         AllKittiesArray get(kitty_by_index): map u64 => T::Hash;
@@ -63,7 +66,7 @@ decl_module! {
             let new_kitty = Kitty {
                 id: random_hash,
                 dna: random_hash,
-                price: <T::Balance as As<u64>>::sa(0),
+                price: <BalanceOf<T> as As<u64>>::sa(0),
                 gen: 0,
             };
 
@@ -74,7 +77,7 @@ decl_module! {
             Ok(())
         }
 
-        fn set_price(origin, kitty_id: T::Hash, new_price: T::Balance) -> Result {
+        fn set_price(origin, kitty_id: T::Hash, new_price: BalanceOf<T>) -> Result {
             let sender = ensure_signed(origin)?;
 
             ensure!(<Kitties<T>>::exists(kitty_id), "This cat does not exist");
@@ -103,7 +106,7 @@ decl_module! {
             Ok(())
         }
 
-        fn buy_kitty(origin, kitty_id: T::Hash, max_price: T::Balance) -> Result {
+        fn buy_kitty(origin, kitty_id: T::Hash, max_price: BalanceOf<T>) -> Result {
             let sender = ensure_signed(origin)?;
 
             ensure!(<Kitties<T>>::exists(kitty_id), "This cat does not exist");
@@ -117,7 +120,7 @@ decl_module! {
             ensure!(!kitty_price.is_zero(), "The cat you want to buy is not for sale");
             ensure!(kitty_price <= max_price, "The cat you want to buy costs more than your max price");
 
-            <balances::Module<T> as Currency<_>>::transfer(&sender, &owner, kitty_price)?;
+            T::Currency::transfer(&sender, &owner, kitty_price)?;
 
             Self::transfer_from(owner.clone(), sender.clone(), kitty_id)
                 .expect("`owner` is shown to own the kitty; \
@@ -127,7 +130,7 @@ decl_module! {
                 which means transfer cannot cause an overflow; \
                 qed");
 
-            kitty.price = <T::Balance as As<u64>>::sa(0);
+            kitty.price = <BalanceOf<T> as As<u64>>::sa(0);
             <Kitties<T>>::insert(kitty_id, kitty);
 
             Self::deposit_event(RawEvent::Bought(sender, owner, kitty_id, kitty_price));
@@ -159,7 +162,7 @@ decl_module! {
             let new_kitty = Kitty {
                 id: random_hash,
                 dna: final_dna,
-                price: <T::Balance as As<u64>>::sa(0),
+                price: <BalanceOf<T> as As<u64>>::sa(0),
                 gen: cmp::max(kitty_1.gen, kitty_2.gen) + 1,
             };
 
@@ -173,7 +176,7 @@ decl_module! {
 }
 
 impl<T: Trait> Module<T> {
-    fn mint(to: T::AccountId, kitty_id: T::Hash, new_kitty: Kitty<T::Hash, T::Balance>) -> Result {
+    fn mint(to: T::AccountId, kitty_id: T::Hash, new_kitty: Kitty<T::Hash, BalanceOf<T>>) -> Result {
         ensure!(!<KittyOwner<T>>::exists(kitty_id), "Kitty already exists");
 
         let owned_kitty_count = Self::owned_kitty_count(&to);

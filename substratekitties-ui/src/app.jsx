@@ -34,7 +34,7 @@ export class App extends ReactiveComponent {
 		window.that = this;
 		window.metadata = metadata;
 
-		addCodecTransform('Kitty<Hash,Balance>', {
+		addCodecTransform('Kitty<Hash,BalanceOf<T>>', {
 			id: 'Hash',
 			dna: 'Hash',
 			price: 'Balance',

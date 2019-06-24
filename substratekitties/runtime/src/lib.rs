@@ -188,6 +188,7 @@ impl sudo::Trait for Runtime {
 
 impl substratekitties::Trait for Runtime {
 	type Event = Event;
+	type Currency = Balances;
 }
 
 construct_runtime!(
