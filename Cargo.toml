@@ -1,0 +1,60 @@
+[package]
+name = "substrate-module-template"
+version = "0.1.0"
+authors = ["Anonymous"]
+edition = "2018"
+
+[features]
+default = ['std']
+std = [
+    'serde',
+    'codec/std',
+    'support/std',
+    'system/std',
+    'runtime-io/std',
+    'sr-primitives/std',
+]
+
+[dependencies.serde]
+version = "1.0"
+optional = true
+
+[dependencies.codec]
+default-features = false
+features = ['derive']
+package = 'parity-scale-codec'
+version = '1.0.0'
+
+[dependencies.support]
+default_features = false
+git = 'https://github.com/paritytech/substrate.git'
+package = 'srml-support'
+rev = '3ba0f2a2dbd37c31851a0ff1c1c0c47aa940de90'
+
+[dependencies.system]
+default_features = false
+git = 'https://github.com/paritytech/substrate.git'
+package = 'srml-system'
+rev = '3ba0f2a2dbd37c31851a0ff1c1c0c47aa940de90'
+
+[dependencies.sr-primitives]
+default_features = false
+git = 'https://github.com/paritytech/substrate.git'
+package = 'sr-primitives'
+rev = '3ba0f2a2dbd37c31851a0ff1c1c0c47aa940de90'
+
+[dependencies.runtime-io]
+default_features = false
+git = 'https://github.com/paritytech/substrate.git'
+package = 'sr-io'
+rev = '3ba0f2a2dbd37c31851a0ff1c1c0c47aa940de90'
+
+[dev-dependencies.primitives]
+git = 'https://github.com/paritytech/substrate.git'
+package = 'substrate-primitives'
+rev = '3ba0f2a2dbd37c31851a0ff1c1c0c47aa940de90'
+
+[dev-dependencies.balances]
+git = 'https://github.com/paritytech/substrate.git'
+package = 'srml-balances'
+rev = '3ba0f2a2dbd37c31851a0ff1c1c0c47aa940de90'
