@@ -4243,6 +4243,7 @@ name = "substratekitties"
 version = "0.1.0"
 dependencies = [
  "parity-scale-codec 1.0.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 1.0.99 (registry+https://github.com/rust-lang/crates.io-index)",
  "sr-io 2.0.0 (git+https://github.com/paritytech/substrate.git?rev=3ba0f2a2dbd37c31851a0ff1c1c0c47aa940de90)",
  "sr-primitives 2.0.0 (git+https://github.com/paritytech/substrate.git?rev=3ba0f2a2dbd37c31851a0ff1c1c0c47aa940de90)",
  "srml-support 2.0.0 (git+https://github.com/paritytech/substrate.git?rev=3ba0f2a2dbd37c31851a0ff1c1c0c47aa940de90)",

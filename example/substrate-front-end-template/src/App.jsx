@@ -16,6 +16,7 @@ import Extrinsics from "./Extrinsics";
 import Metadata from "./Metadata";
 import NodeInfo from "./NodeInfo";
 import ProofOfExistence from "./examples/ProofOfExistence";
+import SubstrateKitties from "./examples/substratekitties/SubstrateKitties";
 import TemplateModule from "./examples/TemplateModule";
 import Transfer from "./Transfer";
 import Upgrade from "./Upgrade";
@@ -26,16 +27,15 @@ export default function App() {
   const [accountLoaded, setAccountLoaded] = useState(false);
   const [accountAddress, setAccountAddress] = useState("");
 
-  //const WS_PROVIDER = "ws://127.0.0.1:9944";
-  const WS_PROVIDER = "wss://dev-node.substrate.dev:9944";
+  const WS_PROVIDER = "ws://127.0.0.1:9944";
+  //const WS_PROVIDER = "wss://dev-node.substrate.dev:9944";
 
   const accountPair = accountAddress && keyring.getPair(accountAddress);
 
   useEffect(() => {
     const provider = new WsProvider(WS_PROVIDER);
 
-    const TYPES = {};
-    //const TYPES = {"MyNumber": "u32"};
+    const TYPES = {"KittyIndex": "u64", "Kitty": "Vec<u8>"};
     // More information on custom types
     // https://github.com/polkadot-js/apps/blob/master/packages/app-settings/src/md/basics.md
 
@@ -136,6 +136,9 @@ export default function App() {
             <Events api={api} />
           </Grid.Row>
           {/* These components render if a module is present in the runtime. */}
+          <Grid.Row>
+            { api.query.substratekitties && <SubstrateKitties api={api} accountPair={accountPair}></SubstrateKitties>}
+          </Grid.Row>
           <Grid.Row>
             { api.query.poe && <ProofOfExistence api={api} accountPair={accountPair}/> }
             { api.query.templateModule && <TemplateModule api={api} accountPair={accountPair} /> }
