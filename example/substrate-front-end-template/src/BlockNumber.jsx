@@ -13,12 +13,17 @@ export default function BlockNumber(props) {
     : api.derive.chain.bestNumber;
 
   useEffect(() => {
-    let unsub = bestNumber(number => {
+    let unsubscribeAll;
+    bestNumber(number => {
       setBlockNumber(number.toNumber());
       setBlockNumberTimer(0);
-    });
+    })
+    .then(unsub => {
+      unsubscribeAll = unsub;
+    })
+    .catch(console.error);
 
-    return () => unsub && unsub();
+    return () => unsubscribeAll && unsubscribeAll();
   }, [bestNumber]);
 
   const timer = () => {
@@ -28,7 +33,7 @@ export default function BlockNumber(props) {
   useEffect(() => {
     const id = setInterval(timer, 1000);
     return () => clearInterval(id);
-  });
+  }, []);
 
   return (
     <>

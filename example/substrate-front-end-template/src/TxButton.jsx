@@ -4,18 +4,19 @@ import { web3FromSource } from "@polkadot/extension-dapp";
 
 export default function TxButton({
   api,
-  fromPair,
+  accountPair,
   label,
   params,
   setStatus,
   tx,
+  disabled,
   sudo = false
 }) {
   const makeCall = async () => {
     const {
       address,
       meta: { source, isInjected }
-    } = fromPair;
+    } = accountPair;
     let fromParam;
 
     //set the signer
@@ -24,7 +25,7 @@ export default function TxButton({
       fromParam = address;
       api.setSigner(injected.signer);
     } else {
-      fromParam = fromPair;
+      fromParam = accountPair;
     }
     setStatus("Sending...");
 
@@ -53,7 +54,7 @@ export default function TxButton({
   };
 
   return (
-    <Button onClick={makeCall} primary type="submit">
+    <Button onClick={makeCall} primary type="submit" disabled={!accountPair || disabled}>
       {label}
     </Button>
   );

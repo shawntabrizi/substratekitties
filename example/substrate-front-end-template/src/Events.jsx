@@ -2,18 +2,18 @@ import React, { useEffect, useState } from "react";
 
 import { Feed, Grid } from "semantic-ui-react";
 
-export default function Metadata(props) {
+export default function Events(props) {
   const { api } = props;
 
   const [eventFeed, setEventFeed] = useState([]);
 
-  // Filter some event from feed
-  const filter = [
-    'system:ExtrinsicSuccess:: (phase={"ApplyExtrinsic":0})',
-    'system:ExtrinsicSuccess:: (phase={"ApplyExtrinsic":1})'
-  ];
-
   useEffect(() => {
+    // Filter some event from feed
+    const filter = [
+      'system:ExtrinsicSuccess:: (phase={"ApplyExtrinsic":0})',
+      'system:ExtrinsicSuccess:: (phase={"ApplyExtrinsic":1})'
+    ];
+
     api.query.system.events(events => {
       // loop through the Vec<EventRecord>
       events.forEach(record => {

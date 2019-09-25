@@ -1,4 +1,4 @@
-# Substrate User Interface Template
+# Substrate Front End Template
 
 This project was bootstrapped with Create React App.
 
@@ -10,7 +10,7 @@ You will also see any lint errors in the console.
 
 ## Install
 ```bash
-cd ./substrate-ui-template
+cd ./substrate-front-end-template
 ```
 ```bash
 yarn install
