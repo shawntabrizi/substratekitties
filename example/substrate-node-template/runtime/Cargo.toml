@@ -118,6 +118,11 @@ git = 'https://github.com/paritytech/substrate.git'
 package = 'srml-timestamp'
 rev = '3ba0f2a2dbd37c31851a0ff1c1c0c47aa940de90'
 
+[dependencies.substratekitties]
+default_features = false
+package = 'substratekitties'
+path = '../../..'
+
 [dependencies.version]
 default_features = false
 git = 'https://github.com/paritytech/substrate.git'
