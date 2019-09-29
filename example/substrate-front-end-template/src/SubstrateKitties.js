@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Form, Input, Grid, Message } from "semantic-ui-react";
 
-import TxButton from "../../TxButton";
+import { useSubstrate } from "./substrate-lib";
+import { TxButton } from "./substrate-lib/components";
 
 // Based on the SubstrateKitties module
 // https://github.com/shawntabrizi/substratekitties
 
 export default function SubstrateKitties(props) {
-  const { api, accountPair } = props;
+  const { api, keyring } = useSubstrate();
+  const accounts = keyring.getPairs();
   const [status, setStatus] = useState("");
   const [kittiesCount, setKittiesCount] = useState(0);
   const [allKitties, setAllKitties] = useState([]);
@@ -54,12 +56,11 @@ export default function SubstrateKitties(props) {
       <Form>
         <Form.Field>
           <TxButton
-            api={api}
             accountPair={accountPair}
             label={"Create Kitty"}
             setStatus={setStatus}
-            params={[]}
-            tx={api.tx.substratekitties.create}
+            type="TRANSACTION"
+            attrs={{ params: [], tx: api.tx.substratekitties.create }}
           />
           {status}
         </Form.Field>
