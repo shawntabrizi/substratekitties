@@ -14,9 +14,9 @@ import Events from "./Events";
 import Extrinsics from "./Extrinsics";
 import Metadata from "./Metadata";
 import NodeInfo from "./NodeInfo";
-import TemplateModule from "./TemplateModule";
 import Transfer from "./Transfer";
 import Upgrade from "./Upgrade";
+import SubstrateKitties from "./SubstrateKitties";
 
 export default function App() {
   const [accountAddress, setAccountAddress] = useState(null);
@@ -68,9 +68,7 @@ export default function App() {
             <Events />
           </Grid.Row>
           <Grid.Row>
-            {api.query.templateModule && (
-              <TemplateModule accountPair={accountPair} />
-            )}
+            <SubstrateKitties accountPair={accountPair} />
           </Grid.Row>
         </Grid>
         <DeveloperConsole />
