@@ -27,22 +27,21 @@ export default function Events(props) {
           event.method
         }:: (phase=${phase.toString()})`;
 
+        if (filter.includes(eventName)) return;
+
         // loop through each of the parameters, displaying the type and data
-        let params = event.data.map((data, index) => {
-          return `${types[index].type}: ${data.toString()}`;
-        });
+        const params = event.data.map((data, index) =>
+          `${types[index].type}: ${data.toString()}`
+        );
 
-        if (!filter.includes(eventName)) {
-          let feedEvent = {
-            icon: "bell",
-            date: "X Blocks Ago",
-            summary: eventName,
-            extraText: event.meta.documentation.join().toString(),
-            content: params
-          };
+        setEventFeed(e => [{
+          icon: 'bell',
+          date: 'X Blocks Ago',
+          summary: `${eventName}-${e.length}`,
+          extraText: event.meta.documentation.join(', ').toString(),
+          content: params.join(', ')
+        }, ...e]);
 
-          setEventFeed(e => [feedEvent, ...e]);
-        }
       });
     });
   }, [api.query.system]);

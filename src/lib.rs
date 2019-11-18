@@ -81,7 +81,7 @@ decl_module! {
 			let sender = ensure_signed(origin)?;
 
 			ensure!(Self::kitty_owner(kitty_id) == Some(sender.clone()), "Only owner can transfer kitty");
-			
+
 			Self::update_owner(&to, kitty_id);
 
 			Self::deposit_event(RawEvent::Transferred(sender, to, kitty_id));
@@ -108,7 +108,7 @@ decl_module! {
 			} else {
 				<KittyPrices<T>>::remove(kitty_id);
 			}
-			
+
 			Self::deposit_event(RawEvent::PriceSet(sender, kitty_id, price));
 		}
 
