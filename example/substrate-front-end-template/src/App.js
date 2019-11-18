@@ -20,7 +20,7 @@ import SubstrateKitties from "./SubstrateKitties";
 
 export default function App() {
   const [accountAddress, setAccountAddress] = useState(null);
-  const { api, apiState, keyring, keyringState } = useSubstrate();
+  const { apiState, keyring, keyringState } = useSubstrate();
   const accountPair =
     accountAddress &&
     keyringState === "READY" &&

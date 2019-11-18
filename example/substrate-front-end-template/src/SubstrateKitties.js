@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Form, Input, Grid, Message } from "semantic-ui-react";
+import { Form, Grid } from "semantic-ui-react";
 
 import { useSubstrate } from "./substrate-lib";
 import KittyCards from './KittyCard';
@@ -9,8 +9,7 @@ import { TxButton } from "./substrate-lib/components";
 // https://github.com/shawntabrizi/substratekitties
 
 export default function SubstrateKitties(props) {
-  const { api, keyring } = useSubstrate();
-  const accounts = keyring.getPairs();
+  const { api } = useSubstrate();
   const [status, setStatus] = useState("");
   const [kittiesCount, setKittiesCount] = useState(0);
   const [allKitties, setAllKitties] = useState([]);

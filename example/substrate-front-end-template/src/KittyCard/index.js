@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Grid, Card } from 'semantic-ui-react';
 
-import { useSubstrate } from '../substrate-lib';
 import KittyAvatar from './avatars';
-
 import './KittyCard.css';
 
 function KittyCard(props) {
