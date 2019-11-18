@@ -11,11 +11,11 @@ function KittyCard(props) {
     <KittyAvatar dna={kitty.dna}/>
     <Card.Content>
       <Card.Header>
-        <span className='limit-name'>Kitty Index: {kittyIndex}</span>
+        <h4><span className='with-limit'>Kitty Index: {kittyIndex}</span></h4>
       </Card.Header>
       <Card.Meta>
-        <span className='limit-name'>DNA: <b>{kitty.dna}</b></span>
-        <span className='limit-name'>Owner: <b>{kitty.owner}</b></span>
+        <span className='with-limit'>DNA: <b>{kitty.dna}</b></span>
+        <span className='with-limit'>Owner: <b>{kitty.owner}</b></span>
       </Card.Meta>
     </Card.Content>
     <Card.Content extra>
@@ -31,7 +31,7 @@ function KittyCards(props) {
   const colCount = 3;
   const rowCount = Math.ceil(kitties.length / colCount);
 
-  return <Grid className="mb-grid" stackable columns="3">{
+  return <Grid className="mb-3" stackable columns="3">{
     Array.from(Array(rowCount).keys()).map(row => <Grid.Row key={row}>{
       Array.from(Array(colCount).keys())
         .filter(col => row * colCount + col < kitties.length)

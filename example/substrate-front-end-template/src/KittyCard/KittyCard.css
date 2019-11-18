@@ -1,4 +1,4 @@
-.limit-name {
+.with-limit {
   display: inline-block;
   width: 100%;
   overflow: hidden;
@@ -6,6 +6,10 @@
   text-overflow: ellipsis;
 }
 
-.mb-grid {
+.mb-3 {
   margin-bottom: 1rem !important;
+}
+
+.pt-3 {
+  padding-top: 1rem;
 }

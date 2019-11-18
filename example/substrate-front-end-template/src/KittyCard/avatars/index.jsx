@@ -103,7 +103,7 @@ export default function KittyAvatar(props) {
     innerStyle = {height: "150px", position: 'absolute', top: '0%', left: '50%'};
 
   let cat = dnaToAttributes(props.dna);
-  return <div className="">
+  return <div className="pt-3">
     <div style={outerStyle}>
       <img alt='body' src={cat.body} style={innerStyle} />
       <img alt='fur' src={cat.fur} style={innerStyle} />
