@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Form, Input, Grid, Message } from "semantic-ui-react";
 
 import { useSubstrate } from "./substrate-lib";
-import KittyCard from './KittyCard';
+import KittyCards from './KittyCard';
 import { TxButton } from "./substrate-lib/components";
 
 // Based on the SubstrateKitties module
@@ -26,17 +26,17 @@ export default function SubstrateKitties(props) {
 
         // Retrieve all kitties, owners, and its price
         const kittyRange = Array.from(Array(kittyCnt).keys());
-        const [kitties, kittyOwners, kittyPrices] = await Promise.all([
+        const [dnas, kittyOwners, kittyPrices] = await Promise.all([
           rpc.kitties.multi(kittyRange),
           rpc.kittyOwners.multi(kittyRange),
           rpc.kittyPrices.multi(kittyRange),
         ]);
-        const kittyInfo = kittyRange.map(i => ({
-          kitty: kitties[i].unwrapOr(null),
+        const kitties = kittyRange.map(i => ({
+          dna: dnas[i].unwrapOr(null),
           owner: kittyOwners[i].unwrapOr(null),
           price: kittyPrices[i].unwrapOr(null),
         }));
-        setAllKitties(kittyInfo);
+        setAllKitties(kitties);
       });
     }
 
@@ -53,7 +53,7 @@ export default function SubstrateKitties(props) {
     <h3>Number of Kitties Purring: {kittiesCount.toString()}</h3>
     {
       allKitties.length > 0 ?
-      allKitties.map((kittyInfo, ind) => <KittyCard key={ind} kittyInfo={kittyInfo} kittyIndex={ind}/>) :
+      <KittyCards kitties = {allKitties} /> :
       "No Kitty Found."
     }
     <Form>

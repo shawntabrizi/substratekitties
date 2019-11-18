@@ -1,4 +1,4 @@
 {
-  "Kitty": "Vec<u8>",
+  "Kitty": "[u8; 16]",
   "KittyIndex": "u64"
 }

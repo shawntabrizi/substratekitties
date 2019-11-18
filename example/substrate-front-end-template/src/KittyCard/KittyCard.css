@@ -5,3 +5,7 @@
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+
+.mb-grid {
+  margin-bottom: 1rem !important;
+}

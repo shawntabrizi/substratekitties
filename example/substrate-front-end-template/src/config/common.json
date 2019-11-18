@@ -2,7 +2,7 @@
   "APP_NAME": "substrate-front-end-tutorial",
   "DEVELOPMENT_KEYRING": true,
   "CUSTOM_TYPES": {
-    "Kitty": "Vec<u8>",
+    "Kitty": "[u8; 16]",
     "KittyIndex": "u64"
   }
 }
