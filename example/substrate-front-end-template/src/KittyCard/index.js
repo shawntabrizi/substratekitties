@@ -1,5 +1,7 @@
 import React from "react";
 import { Grid, Card } from 'semantic-ui-react';
+import { bnToHex } from '@polkadot/util';
+import { encodeAddress } from '@polkadot/util-crypto';
 
 import KittyAvatar from './avatars';
 import './KittyCard.css';
@@ -14,8 +16,8 @@ function KittyCard(props) {
         <h4><span className='with-limit'>Kitty Index: {kittyIndex}</span></h4>
       </Card.Header>
       <Card.Meta>
-        <span className='with-limit'>DNA: <b>{kitty.dna}</b></span>
-        <span className='with-limit'>Owner: <b>{kitty.owner}</b></span>
+        <span className='with-limit'>DNA: <b>{bnToHex(kitty.dna)}</b></span>
+        <span className='with-limit'>Owner: <b>{encodeAddress(kitty.owner)}</b></span>
       </Card.Meta>
     </Card.Content>
     <Card.Content extra>
