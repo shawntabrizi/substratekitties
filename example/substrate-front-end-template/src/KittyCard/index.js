@@ -14,11 +14,9 @@ function KittyCard(props) {
         <span className='limit-name'>Kitty Index: {kittyIndex}</span>
       </Card.Header>
       <Card.Meta>
-        <span className='limit-name'>{kitty.dna}</span>
+        <span className='limit-name'>DNA: <b>{kitty.dna}</b></span>
+        <span className='limit-name'>Owner: <b>{kitty.owner}</b></span>
       </Card.Meta>
-      <span className='limit-name'>
-        <b>Owner</b>: { kitty.owner }
-      </span>
     </Card.Content>
     <Card.Content extra>
       { kitty.price ?

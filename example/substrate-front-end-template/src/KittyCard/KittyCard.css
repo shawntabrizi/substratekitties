@@ -1,5 +1,5 @@
 .limit-name {
-  display: block;
+  display: inline-block;
   width: 100%;
   overflow: hidden;
   white-space: nowrap;
