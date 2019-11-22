@@ -80,13 +80,12 @@ const IMAGES = {
     require('./fur_8.png'),
     require('./fur_9.png'),
     require('./fur_10.png')
-  ],
+  ]
 };
 
-
-function dnaToAttributes(dna) {
-  let attribute = (index, length) => {
-    return dna[index] % length
+function dnaToAttributes (dna) {
+  const attribute = (index, length) => {
+    return dna[index] % length;
   };
 
   return {
@@ -95,21 +94,28 @@ function dnaToAttributes(dna) {
     accessory: IMAGES.accessories[attribute(2, IMAGES.accessories.length)],
     fur: IMAGES.fur[attribute(3, IMAGES.fur.length)],
     mouth: IMAGES.mouth[attribute(4, IMAGES.mouth.length)]
-  }
+  };
 }
 
-export default function KittyAvatar(props) {
-  let outerStyle = {height: "150px", position: 'relative', width: "50%"},
-    innerStyle = {height: "150px", position: 'absolute', top: '0%', left: '50%'};
+export default function KittyAvatar (props) {
+  const outerStyle = { height: '150px', position: 'relative', width: '50%' };
+  const innerStyle = {
+    height: '150px',
+    position: 'absolute',
+    top: '0%',
+    left: '50%'
+  };
 
-  let cat = dnaToAttributes(props.dna);
-  return <div className="pt-3">
-    <div style={outerStyle}>
-      <img alt='body' src={cat.body} style={innerStyle} />
-      <img alt='fur' src={cat.fur} style={innerStyle} />
-      <img alt='mouth' src={cat.mouth} style={innerStyle} />
-      <img alt='eyes' src={cat.eyes} style={innerStyle} />
-      <img alt='accessory' src={cat.accessory} style={innerStyle} />
+  const cat = dnaToAttributes(props.dna);
+  return (
+    <div className='pt-3'>
+      <div style={outerStyle}>
+        <img alt='body' src={cat.body} style={innerStyle} />
+        <img alt='fur' src={cat.fur} style={innerStyle} />
+        <img alt='mouth' src={cat.mouth} style={innerStyle} />
+        <img alt='eyes' src={cat.eyes} style={innerStyle} />
+        <img alt='accessory' src={cat.accessory} style={innerStyle} />
+      </div>
     </div>
-  </div>
+  );
 }

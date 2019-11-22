@@ -3,9 +3,9 @@
 use codec::{Decode, Encode};
 use runtime_io::blake2_128;
 use sr_primitives::traits::{Bounded, Member, One, SimpleArithmetic};
-use support::traits::Currency;
+use support::traits::{Currency, Randomness};
 /// A runtime module for managing non-fungible tokens
-use support::{decl_event, decl_module, decl_storage, ensure, Parameter, StorageMap, StorageValue};
+use support::{decl_event, decl_module, decl_storage, ensure, Parameter};
 use system::ensure_signed;
 
 /// The module's configuration trait.
@@ -13,6 +13,7 @@ pub trait Trait: system::Trait {
     type Event: From<Event<Self>> + Into<<Self as system::Trait>::Event>;
     type KittyIndex: Parameter + Member + SimpleArithmetic + Bounded + Default + Copy;
     type Currency: Currency<Self::AccountId>;
+    type Randomness: Randomness<Self::Hash>;
 }
 
 type BalanceOf<T> = <<T as Trait>::Currency as Currency<<T as system::Trait>::AccountId>>::Balance;
@@ -139,7 +140,7 @@ decl_module! {
 impl<T: Trait> Module<T> {
     fn random_value(sender: &T::AccountId) -> [u8; 16] {
         let payload = (
-            <system::Module<T>>::random_seed(),
+            T::Randomness::random(&[0]),
             sender,
             <system::Module<T>>::extrinsic_index(),
             <system::Module<T>>::block_number(),

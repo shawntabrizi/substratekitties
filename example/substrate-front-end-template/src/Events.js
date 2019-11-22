@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { Feed, Grid } from "semantic-ui-react";
+import React, { useEffect, useState } from 'react';
+import { Feed, Grid } from 'semantic-ui-react';
 
-import { useSubstrate } from "./substrate-lib";
+import { useSubstrate } from './substrate-lib';
 
-export default function Events(props) {
+export default function Events (props) {
   const { api } = useSubstrate();
-
   const [eventFeed, setEventFeed] = useState([]);
 
   useEffect(() => {
@@ -23,7 +22,7 @@ export default function Events(props) {
         const types = event.typeDef;
 
         // show what we are busy with
-        let eventName = `${event.section}:${
+        const eventName = `${event.section}:${
           event.method
         }:: (phase=${phase.toString()})`;
 
@@ -41,7 +40,6 @@ export default function Events(props) {
           extraText: event.meta.documentation.join(', ').toString(),
           content: params.join(', ')
         }, ...e]);
-
       });
     });
   }, [api.query.system]);
@@ -49,7 +47,7 @@ export default function Events(props) {
   return (
     <Grid.Column>
       <h1>Events</h1>
-      <Feed style={{ overflow: "auto", maxHeight: 250 }} events={eventFeed} />
+      <Feed style={{ overflow: 'auto', maxHeight: 250 }} events={eventFeed} />
     </Grid.Column>
   );
 }

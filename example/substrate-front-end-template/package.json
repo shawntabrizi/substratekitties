@@ -5,30 +5,53 @@
   "author": "Parity Technologies <admin@parity.io>",
   "license": "Unlicense",
   "dependencies": {
-    "@polkadot/api": "^0.91.0-beta.22",
-    "@polkadot/extension-dapp": "^0.9.1",
-    "@polkadot/keyring": "^1.1.1",
-    "@polkadot/react-identicon": "^0.42.1",
-    "@polkadot/ui-keyring": "^0.42.1",
-    "@polkadot/util": "^1.2.1",
-    "@polkadot/util-crypto": "^1.2.1",
-    "gh-pages": "^2.1.1",
+    "@polkadot/api": "^0.96.1",
+    "@polkadot/extension-dapp": "^0.13.1",
+    "@polkadot/keyring": "^1.6.1",
+    "@polkadot/react-identicon": "^0.46.1",
+    "@polkadot/ui-keyring": "^0.46.1",
+    "@polkadot/util": "^1.6.1",
+    "@polkadot/util-crypto": "^1.6.1",
+    "big.js": "^5.2.2",
     "prop-types": "^15.7.2",
-    "react": "^16.9.0",
-    "react-dom": "^16.9.0",
-    "react-scripts": "3.1.1",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0",
+    "react-scripts": "3.2.0",
     "semantic-ui-css": "^2.4.1",
-    "semantic-ui-react": "^0.88.0"
+    "semantic-ui-react": "^0.88.0",
+    "toformat": "^2.0.0"
+  },
+  "devDependencies": {
+    "eslint-config-standard": "^14.1.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-node": "^10.0.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "gh-pages": "^2.1.1"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "PORT=8000 react-scripts start",
     "build": "react-scripts build",
+    "test": "CI=true react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "lint": "eslint src/**",
+    "lint:ci": "eslint src/** --max-warnings=0",
+    "lint:fix": "eslint --fix src/**",
+    "predeploy": "yarn build",
+    "deploy": "gh-pages -d build -m '[ci skip] Updates'"
   },
   "eslintConfig": {
-    "extends": "react-app"
+    "extends": [
+      "react-app",
+      "standard"
+    ],
+    "rules": {
+      "semi": [
+        1,
+        "always"
+      ],
+      "no-extra-semi": 1
+    }
   },
   "browserslist": {
     "production": [
@@ -42,9 +65,9 @@
       "last 1 safari version"
     ]
   },
-  "homepage": "https://shawntabrizi.github.io/substratekitties/",
+  "homepage": "https://substrate-developer-hub.github.io/substrate-front-end-template",
   "bugs": {
-    "url": "https://github.com/shawntabrizi/substratekitties/issues"
+    "url": "https://github.com/substrate-developer-hub/substrate-front-end-template/issues"
   },
   "keywords": [
     "substrate",

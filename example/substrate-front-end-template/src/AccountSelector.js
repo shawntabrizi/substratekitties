@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 
 import {
   Menu,
@@ -7,26 +7,25 @@ import {
   Icon,
   Image,
   Label
-} from "semantic-ui-react";
+} from 'semantic-ui-react';
 
-import { useSubstrate } from "./substrate-lib";
+import { useSubstrate } from './substrate-lib';
 
-export default function NodeInfo(props) {
+export default function AccountSelector (props) {
   const { api, keyring } = useSubstrate();
   const { setAccountAddress } = props;
-  const [accountSelected, setAccountSelected] = useState("");
-  const [accountBalance, setAccountBalance] = useState(0);
+  const [accountSelected, setAccountSelected] = useState('');
 
   // Get the list of accounts we possess the private key for
   const keyringOptions = keyring.getPairs().map(account => ({
     key: account.address,
     value: account.address,
     text: account.meta.name.toUpperCase(),
-    icon: "user"
+    icon: 'user'
   }));
 
   const initialAddress =
-    keyringOptions.length > 0 ? keyringOptions[0].value : "";
+    keyringOptions.length > 0 ? keyringOptions[0].value : '';
 
   // Set the initial address
   useEffect(() => {
@@ -40,6 +39,51 @@ export default function NodeInfo(props) {
     setAccountSelected(address);
   };
 
+  return (
+    <Menu
+      attached='top'
+      tabular
+      style={{
+        backgroundColor: '#fff',
+        borderColor: '#fff',
+        paddingTop: '1em',
+        paddingBottom: '1em'
+      }}
+    >
+      <Container>
+        <Menu.Menu>
+          <Image src='Substrate-Logo.png' size='mini' />
+        </Menu.Menu>
+        <Menu.Menu position='right'>
+          <Icon
+            name='users'
+            size='large'
+            circular
+            color={accountSelected ? 'green' : 'red'}
+          />
+          <Dropdown
+            search
+            selection
+            clearable
+            placeholder='Select an account'
+            options={keyringOptions}
+            onChange={(_, dropdown) => { onChange(dropdown.value); }}
+            value={accountSelected}
+          />
+          {api.query.balances && api.query.balances.freeBalance
+            ? <BalanceAnnotation accountSelected={accountSelected} />
+            : null}
+        </Menu.Menu>
+      </Container>
+    </Menu>
+  );
+}
+
+function BalanceAnnotation (props) {
+  const { accountSelected } = props;
+  const { api } = useSubstrate();
+  const [accountBalance, setAccountBalance] = useState(0);
+
   // When account address changes, update subscriptions
   useEffect(() => {
     let unsubscribe;
@@ -47,54 +91,21 @@ export default function NodeInfo(props) {
     // If the user has selected an address, create a new subscription
     accountSelected &&
       api.query.balances.freeBalance(accountSelected, balance => {
-          setAccountBalance(balance.toString());
-        }).then(unsub => {
-          unsubscribe = unsub;
-        }).catch(console.error);
+        setAccountBalance(balance.toString());
+      }).then(unsub => {
+        unsubscribe = unsub;
+      }).catch(console.error);
 
     return () => unsubscribe && unsubscribe();
   }, [accountSelected, api.query.balances]);
 
-  return (
-    <Menu
-      attached="top"
-      tabular
-      style={{
-        backgroundColor: "#fff",
-        borderColor: "#fff",
-        paddingTop: "1em",
-        paddingBottom: "1em"
-      }}
-    >
-      <Container>
-        <Menu.Menu>
-          <Image src="Substrate-Logo.png" size="mini" />
-        </Menu.Menu>
-        <Menu.Menu position="right">
-          <Icon
-            name="users"
-            size="large"
-            circular
-            color={accountSelected ? "green" : "red"} />
-          <Dropdown
-            search
-            selection
-            clearable
-            placeholder="Select an account"
-            options={keyringOptions}
-            onChange={ (_, dropdown) => { onChange(dropdown.value); } }
-            value={accountSelected} />
-          { api.query.balances && accountSelected ?
-            <Label pointing="left">
-              <Icon
-                name="money bill alternate"
-                color={accountBalance > 0 ? "green" : "red"} />
-              {accountBalance}
-            </Label> :
-            ""
-          }
-        </Menu.Menu>
-      </Container>
-    </Menu>
-  );
+  return accountSelected
+    ? <Label pointing='left'>
+      <Icon
+        name='money bill alternate'
+        color={accountBalance > 0 ? 'green' : 'red'}
+      />
+      {accountBalance}
+    </Label>
+    : null;
 }
