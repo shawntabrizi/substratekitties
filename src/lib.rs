@@ -1,9 +1,9 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use codec::{Decode, Encode};
-use runtime_io::blake2_128;
+use runtime_io::hashing::{blake2_128};
 use sr_primitives::traits::{Bounded, Member, One, SimpleArithmetic};
-use support::traits::{Currency, Randomness};
+use support::traits::{Currency, ExistenceRequirement, Randomness};
 /// A runtime module for managing non-fungible tokens
 use support::{decl_event, decl_module, decl_storage, ensure, Parameter};
 use system::ensure_signed;
@@ -126,7 +126,7 @@ decl_module! {
             let kitty_price = kitty_price.unwrap();
             ensure!(price >= kitty_price, "Price is too low");
 
-            T::Currency::transfer(&sender, &owner, kitty_price)?;
+            T::Currency::transfer(&sender, &owner, kitty_price, ExistenceRequirement::AllowDeath)?;
 
             <KittyPrices<T>>::remove(kitty_id);
 
@@ -226,13 +226,12 @@ mod tests {
 
     use primitives::{Blake2Hasher, H256};
     use runtime_io::with_externalities;
-    use sr_primitives::weights::Weight;
     use sr_primitives::Perbill;
     use sr_primitives::{
         testing::Header,
         traits::{BlakeTwo256, IdentityLookup},
     };
-    use support::{assert_noop, assert_ok, impl_outer_origin, parameter_types};
+    use support::{assert_noop, assert_ok, impl_outer_origin, parameter_types, weights::Weight};
 
     impl_outer_origin! {
         pub enum Origin for Test {}
