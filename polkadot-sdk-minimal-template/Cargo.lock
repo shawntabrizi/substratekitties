@@ -4295,7 +4295,6 @@ name = "minimal-template-runtime"
 version = "0.1.0"
 dependencies = [
  "pallet-balances",
- "pallet-kitties",
  "pallet-minimal-template",
  "pallet-sudo",
  "pallet-timestamp",
@@ -4938,15 +4937,6 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "sp-runtime",
-]
-
-[[package]]
-name = "pallet-kitties"
-version = "0.1.0"
-dependencies = [
- "parity-scale-codec",
- "polkadot-sdk-frame",
- "scale-info",
 ]
 
 [[package]]
