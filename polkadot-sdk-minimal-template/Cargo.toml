@@ -16,6 +16,7 @@ resolver = "2"
 [workspace.dependencies]
 minimal-template-runtime = { path = "./runtime", default-features = false }
 pallet-minimal-template = { path = "./pallets/template", default-features = false }
+pallet-kitties = { path = "../substrate-collectables-workshop", default-features = false }
 clap = { version = "4.5.3" }
 docify = { version = "0.2.8" }
 frame = { version = "0.6.0", default-features = false, package = "polkadot-sdk-frame" }

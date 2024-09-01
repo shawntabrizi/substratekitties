@@ -123,6 +123,10 @@ mod runtime {
 	/// A minimal pallet template.
 	#[runtime::pallet_index(5)]
 	pub type Template = pallet_minimal_template::Pallet<Runtime>;
+
+	/// A kitties nft marketplace pallet.
+	#[runtime::pallet_index(6)]
+	pub type Kitties = pallet_kitties::Pallet<Runtime>;
 }
 
 parameter_types! {
@@ -164,6 +168,12 @@ impl pallet_transaction_payment::Config for Runtime {
 
 // Implements the types required for the template pallet.
 impl pallet_minimal_template::Config for Runtime {}
+
+impl pallet_kitties::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type NativeBalance = Balances;
+}
+
 
 type Block = frame::runtime::types_common::BlockOf<Runtime, SignedExtra>;
 type Header = HeaderFor<Runtime>;
