@@ -1,0 +1,7 @@
+[submodule "polkadot-sdk-minimal-template"]
+	path = polkadot-sdk-minimal-template
+	url = https://github.com/paritytech/polkadot-sdk-minimal-template
+[submodule "substrate-collectables-workshop"]
+	path = substrate-collectables-workshop
+	url = https://github.com/shawntabrizi/substrate-collectables-workshop
+	branch = gitorial
