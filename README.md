@@ -32,7 +32,9 @@ git clone --depth=1 --branch=master https://github.com/paritytech/polkadot-sdk-m
 rm -rf ./polkadot-sdk-minimal-template/.git
 ```
 
-We need to update the minimal template to include the `pallet-kitties`, which is shown in this commit: TODO.
+We need to update the minimal template to include the `pallet-kitties`, which is shown in this commit:
+
+https://github.com/shawntabrizi/substratekitties/commit/4129751eba6d12d7cdaff3c45131546f4d037a43
 
 **Substrate Kitties UI**
 
