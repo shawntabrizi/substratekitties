@@ -2,14 +2,10 @@ import { MarketplaceKittyCard } from "./marketplace-kitty-card";
 import { Heading, Grid } from "@radix-ui/themes";
 import { useKittyContext } from "./context/kitty-context";
 
-interface Props {
-  account: string;
-}
-
-export function MarketplaceList({ account }: Props) {
-  const { kitties } = useKittyContext();
+export function MarketplaceList() {
+  const { kitties, selectedAccount } = useKittyContext();
   const marketplaceKitties = kitties.filter(
-    (kitty) => kitty.owner !== account && kitty.price !== null
+    (kitty) => kitty.owner !== selectedAccount && kitty.price !== null
   );
 
   return (

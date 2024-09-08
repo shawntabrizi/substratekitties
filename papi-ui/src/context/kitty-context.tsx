@@ -12,7 +12,7 @@ interface KittyContextType {
   kittiesOwned: Record<string, string[]>; // owner to kitty DNA
   countForKitties: number;
   selectedAccount?: string;
-  setSelectedAccount: (account?: string) => void;
+  setSelectedAccount: (account: string) => void;
 }
 
 const KittyContext = createContext<KittyContextType>({

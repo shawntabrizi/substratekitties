@@ -1,24 +1,34 @@
-import { data } from "./context/data";
-import { KittyCard } from "./kitty-card";
+import { Grid, Heading } from "@radix-ui/themes";
 import { useKittyContext } from "./context/kitty-context";
+import { KittyCard } from "./kitty-card";
 
-interface Props {
-  account: string;
-}
+export function KittyList() {
+  const { kittiesOwned, kitties, selectedAccount } = useKittyContext();
 
-export function KittyList({ account }: Props) {
-  const { kittiesOwned } = useKittyContext();
+  if (!selectedAccount) {
+    return (
+      <div>
+        <Heading size="5" mb="4">
+          No account selected
+        </Heading>
+      </div>
+    );
+  }
 
-  const ownedKitties = kittiesOwned[account] ?? [];
+  const ownedKitties = kittiesOwned[selectedAccount] ?? [];
 
   return (
     <div>
-      <h2>Your Kitties</h2>
-      {ownedKitties.map((dna) => {
-        const kitty = data.kitties.find((k) => k.dna === dna);
-        if (!kitty) return null;
-        return <KittyCard key={kitty.dna} kitty={kitty} isOwner={true} />;
-      })}
+      <Heading size="5" mb="4">
+        Your Kitties
+      </Heading>
+      <Grid columns="3" gap="4">
+        {ownedKitties.map((dna) => {
+          const kitty = kitties.find((k) => k.dna === dna);
+          if (!kitty) return null;
+          return <KittyCard key={kitty.dna} kitty={kitty} isOwner={true} />;
+        })}
+      </Grid>
     </div>
   );
 }

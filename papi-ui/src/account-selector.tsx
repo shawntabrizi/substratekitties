@@ -6,6 +6,8 @@ import { data } from "./context/data";
 export function AccountSelector() {
   const { selectedAccount, setSelectedAccount } = useKittyContext();
 
+  console.log(selectedAccount);
+
   return (
     <Select.Root
       onValueChange={(newAccount) => setSelectedAccount(newAccount)}
