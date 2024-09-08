@@ -1,11 +1,11 @@
 import * as Form from "@radix-ui/react-form";
 import { Button, Flex, TextField } from "@radix-ui/themes";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { cn } from "./utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { FixedSizeBinary } from "polkadot-api";
-import { useKittyContext } from "./context/kitty-context";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { transferKitty } from "./api/methods";
+import { useKittyContext } from "./context/kitty-context";
+import { cn } from "./utils";
 
 interface Props {
   kittyDna: string;
@@ -17,15 +17,11 @@ interface FormInputs {
 
 export function TransferKittyForm({ kittyDna }: Props) {
   const { register, handleSubmit, reset, formState } = useForm<FormInputs>();
-  const { polkadotSigner, api } = useKittyContext();
+  const { polkadotSigner } = useKittyContext();
   const queryClient = useQueryClient();
-  const { mutate: transferKitty, isPending } = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationKey: ["transfer-kitty", kittyDna],
-    mutationFn: async (newOwner: string) =>
-      api.tx.Kitties.transfer({
-        kitty_id: FixedSizeBinary.fromHex(kittyDna),
-        to: newOwner,
-      }).signAndSubmit(polkadotSigner!),
+    mutationFn: transferKitty,
     onSuccess: async (response) => {
       console.log("Kitty transferred", response);
       if (response.ok) {
@@ -40,7 +36,11 @@ export function TransferKittyForm({ kittyDna }: Props) {
   });
 
   const onSubmit: SubmitHandler<FormInputs> = (data) => {
-    transferKitty(data.newOwner);
+    if (!polkadotSigner) {
+      toast.error("Please connect your wallet");
+      return;
+    }
+    mutate({ polkadotSigner, kittyId: kittyDna, newOwner: data.newOwner });
 
     reset();
   };

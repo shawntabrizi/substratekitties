@@ -1,11 +1,11 @@
 import * as Form from "@radix-ui/react-form";
 import { Button, Flex, TextField } from "@radix-ui/themes";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { cn } from "./utils";
-import { useKittyContext } from "./context/kitty-context";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { FixedSizeBinary } from "polkadot-api";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { setPrice } from "./api/methods";
+import { useKittyContext } from "./context/kitty-context";
+import { cn } from "./utils";
 
 interface Props {
   kittyDna: string;
@@ -26,15 +26,11 @@ export function SetPriceForm({ kittyDna, currentPrice }: Props) {
       price: currentPrice?.toString() || "",
     },
   });
-  const { polkadotSigner, api } = useKittyContext();
+  const { polkadotSigner } = useKittyContext();
   const queryClient = useQueryClient();
   const { mutate, isPending } = useMutation({
     mutationKey: ["setPrice", kittyDna],
-    mutationFn: async (price?: bigint) =>
-      api.tx.Kitties.set_price({
-        kitty_id: FixedSizeBinary.fromHex(kittyDna),
-        new_price: price,
-      }).signAndSubmit(polkadotSigner!),
+    mutationFn: setPrice,
     onSuccess: (response) => {
       console.log("Kitty price set", response);
       if (response.ok) {
@@ -49,11 +45,11 @@ export function SetPriceForm({ kittyDna, currentPrice }: Props) {
   });
 
   const onSubmit: SubmitHandler<FormInputs> = (data) => {
-    mutate(BigInt(data.price));
+    mutate({ polkadotSigner, dna: kittyDna, price: BigInt(data.price) });
   };
 
   const handleRemoveFromMarket = () => {
-    mutate(undefined);
+    mutate({ polkadotSigner, dna: kittyDna, price: undefined });
   };
 
   return (

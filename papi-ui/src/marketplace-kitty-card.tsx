@@ -1,7 +1,7 @@
 import { Button, Card, Flex, Heading, Text } from "@radix-ui/themes";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { FixedSizeBinary } from "polkadot-api";
 import { toast } from "sonner";
+import { buyKitty } from "./api/methods";
 import { useKittyContext } from "./context/kitty-context";
 
 interface Props {
@@ -11,15 +11,11 @@ interface Props {
 }
 
 export function MarketplaceKittyCard({ dna, price, owner }: Props) {
-  const { polkadotSigner, api } = useKittyContext();
+  const { polkadotSigner } = useKittyContext();
   const queryClient = useQueryClient();
   const { mutate, isPending } = useMutation({
     mutationKey: ["purchase-kitty", dna],
-    mutationFn: async () =>
-      api.tx.Kitties.buy_kitty({
-        kitty_id: FixedSizeBinary.fromHex(dna),
-        max_price: price,
-      }).signAndSubmit(polkadotSigner!),
+    mutationFn: buyKitty,
     onSuccess: async (response) => {
       console.log("Kitty purchased", response);
       if (response.ok) {
@@ -39,7 +35,7 @@ export function MarketplaceKittyCard({ dna, price, owner }: Props) {
       return;
     }
 
-    mutate();
+    mutate({ polkadotSigner, dna, maxPrice: price });
   };
 
   return (

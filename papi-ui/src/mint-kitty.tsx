@@ -1,15 +1,15 @@
 import { Button, Heading } from "@radix-ui/themes";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { mintKitty } from "./api/methods";
 import { useKittyContext } from "./context/kitty-context";
 
 export function MintKitty() {
-  const { polkadotSigner, api } = useKittyContext();
+  const { polkadotSigner } = useKittyContext();
   const queryClient = useQueryClient();
-  const { mutate: mintKitty, isPending } = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationKey: ["mintKitty"],
-    mutationFn: async () =>
-      api.tx.Kitties.create_kitty().signAndSubmit(polkadotSigner!),
+    mutationFn: mintKitty,
     onSuccess: async (response) => {
       console.log("Kitty minted", response);
       if (response.ok) {
@@ -28,7 +28,7 @@ export function MintKitty() {
       toast.error("No signer found");
       return;
     }
-    mintKitty();
+    mutate({ polkadotSigner });
   }
 
   return (
