@@ -1,32 +1,45 @@
-import { Grid, Heading } from "@radix-ui/themes";
+import { Grid, Heading, Text } from "@radix-ui/themes";
 import { useKittyContext } from "./context/kitty-context";
 import { KittyCard } from "./kitty-card";
+import {
+  ss58Address,
+  ss58Decode,
+  ss58Encode,
+  ss58PublicKey,
+} from "@polkadot-labs/hdkd-helpers";
 
 export function KittyList() {
-  const { kittiesOwned, kitties, selectedAccount } = useKittyContext();
+  const { kittiesOwned, kitties, selectedAccount, polkadotSigner } =
+    useKittyContext();
 
   if (!selectedAccount) {
     return (
       <div>
         <Heading size="5" mb="4">
-          No account selected
+          {selectedAccount} Kitties
         </Heading>
+        <Text>No account selected</Text>
       </div>
     );
   }
 
-  const ownedKitties = kittiesOwned[selectedAccount] ?? [];
+  const kittiesOwnedByAccount = kittiesOwned[selectedAccount];
+  const isOwner =
+    polkadotSigner !== undefined
+      ? polkadotSigner.publicKey.toString() ===
+        ss58Decode(selectedAccount)[0].toString()
+      : false;
 
   return (
     <div>
       <Heading size="5" mb="4">
-        Your Kitties
+        Kitties owned by {isOwner ? "you" : selectedAccount}
       </Heading>
       <Grid columns="3" gap="4">
-        {ownedKitties.map((dna) => {
+        {kittiesOwnedByAccount.map((dna) => {
           const kitty = kitties.find((k) => k.dna === dna);
           if (!kitty) return null;
-          return <KittyCard key={kitty.dna} kitty={kitty} isOwner={true} />;
+          return <KittyCard key={kitty.dna} kitty={kitty} isOwner={isOwner} />;
         })}
       </Grid>
     </div>

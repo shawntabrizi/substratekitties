@@ -1,13 +1,10 @@
 import { Card, Flex, Heading, Text } from "@radix-ui/themes";
 import { SetPriceForm } from "./set-price-form";
 import { TransferKittyForm } from "./transfer-kitty-form";
+import type { Kitty } from "./context/kitty-context";
 
 interface Props {
-  kitty: {
-    dna: string;
-    owner: string;
-    price: number | null;
-  };
+  kitty: Kitty;
   isOwner: boolean;
 }
 
@@ -20,7 +17,7 @@ export function KittyCard({ kitty, isOwner }: Props) {
         </Heading>
         <Text>Owner: {kitty.owner}</Text>
         <Text>
-          Price: {kitty.price === null ? "Not for sale" : kitty.price}
+          Price: {kitty.price === undefined ? "Not for sale" : kitty.price.toString()}
         </Text>
         {isOwner && (
           <>

@@ -2,10 +2,15 @@ import * as Form from "@radix-ui/react-form";
 import { Button, Flex, TextField } from "@radix-ui/themes";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { cn } from "./utils";
+import { useKittyContext } from "./context/kitty-context";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import polkadotApi from "./papi-client";
+import { FixedSizeBinary } from "polkadot-api";
+import { toast } from "sonner";
 
 interface Props {
   kittyDna: string;
-  currentPrice: number | null;
+  currentPrice?: bigint;
 }
 
 interface FormInputs {
@@ -22,15 +27,34 @@ export function SetPriceForm({ kittyDna, currentPrice }: Props) {
       price: currentPrice?.toString() || "",
     },
   });
+  const { polkadotSigner } = useKittyContext();
+  const queryClient = useQueryClient();
+  const { mutate, isPending } = useMutation({
+    mutationKey: ["setPrice", kittyDna],
+    mutationFn: async (price?: bigint) =>
+      polkadotApi.tx.Kitties.set_price({
+        kitty_id: FixedSizeBinary.fromHex(kittyDna),
+        new_price: price,
+      }).signAndSubmit(polkadotSigner!),
+    onSuccess: (response) => {
+      console.log("Kitty price set", response);
+      if (response.ok) {
+        toast.success("Kitty price set");
+      } else {
+        toast.error(
+          "Kitty price set failed, check the console for more information"
+        );
+      }
+      queryClient.invalidateQueries({ queryKey: ["kitties"] });
+    },
+  });
 
   const onSubmit: SubmitHandler<FormInputs> = (data) => {
-    // TODO: Implement set price logic
-    console.log(`Setting price for kitty ${kittyDna} to ${data.price}`);
+    mutate(BigInt(data.price));
   };
 
   const handleRemoveFromMarket = () => {
-    // TODO: Implement remove kitty from the market
-    console.log(`Removing kitty ${kittyDna} from the market`);
+    mutate(undefined);
   };
 
   return (
@@ -47,9 +71,16 @@ export function SetPriceForm({ kittyDna, currentPrice }: Props) {
             {errors.price?.message}
           </Form.Message>
         </Form.Field>
-        <Button type="submit">Set Price</Button>
+        <Button type="submit" loading={isPending}>
+          Set Price
+        </Button>
         {currentPrice !== null && (
-          <Button type="button" onClick={handleRemoveFromMarket} variant="soft">
+          <Button
+            type="button"
+            onClick={handleRemoveFromMarket}
+            variant="soft"
+            loading={isPending}
+          >
             Remove from Market
           </Button>
         )}

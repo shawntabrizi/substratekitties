@@ -4,9 +4,6 @@ import { useKittyContext } from "./context/kitty-context";
 
 export function MarketplaceList() {
   const { kitties, selectedAccount } = useKittyContext();
-  const marketplaceKitties = kitties.filter(
-    (kitty) => kitty.owner !== selectedAccount && kitty.price !== null
-  );
 
   return (
     <div>
@@ -14,9 +11,19 @@ export function MarketplaceList() {
         Marketplace
       </Heading>
       <Grid columns="3" gap="4">
-        {marketplaceKitties.map((kitty) => (
-          <MarketplaceKittyCard key={kitty.dna} kitty={kitty} />
-        ))}
+        {kitties
+          .filter(
+            (kitty) =>
+              kitty.owner !== selectedAccount && kitty.price !== undefined
+          )
+          .map((kitty) => (
+            <MarketplaceKittyCard
+              key={kitty.dna.toString()}
+              dna={kitty.dna.toString()}
+              price={kitty.price!}
+              owner={kitty.owner}
+            />
+          ))}
       </Grid>
     </div>
   );
