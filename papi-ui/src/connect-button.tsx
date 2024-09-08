@@ -25,6 +25,9 @@ export function ConnectButton() {
       <Button onClick={() => connectWithDevPhrase("//Bob")}>
         Connect with Bob
       </Button>
+      <Button onClick={() => connectWithDevPhrase("//Charlie")}>
+        Connect with Charlie
+      </Button>
     </Flex>
   );
 }
