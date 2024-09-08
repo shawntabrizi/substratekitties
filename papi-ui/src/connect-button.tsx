@@ -20,7 +20,7 @@ export function ConnectButton() {
 
   return (
     <Flex gap="2">
-      <Button onClick={connect}>Connect</Button>
+      <Button onClick={connect}>Connect With Extension</Button>
       <Button onClick={() => connectWithDevPhrase()}>Connect with Alice</Button>
       <Button onClick={() => connectWithDevPhrase("//Bob")}>
         Connect with Bob

@@ -14,13 +14,17 @@ import {
 } from "polkadot-api/pjs-signer";
 import { getPolkadotSigner } from "polkadot-api/signer";
 import { createContext, useContext, useState } from "react";
-import polkadotApi from "../papi-client";
 import { data } from "./data";
+import { polkadotApi } from "./papi-client";
 
 export type Kitty = {
   dna: string;
   owner: string;
   price?: bigint;
+};
+
+export type KittyForSale = Kitty & {
+  price: bigint;
 };
 
 interface KittyContextType {
@@ -32,6 +36,7 @@ interface KittyContextType {
   connect: () => Promise<void>;
   connectWithDevPhrase: (path?: string) => void;
   disconnect: () => Promise<void>;
+  api: typeof polkadotApi;
 }
 
 const KittyContext = createContext<KittyContextType>({
@@ -41,6 +46,7 @@ const KittyContext = createContext<KittyContextType>({
   connect: () => Promise.resolve(),
   connectWithDevPhrase: () => {},
   disconnect: () => Promise.resolve(),
+  api: polkadotApi,
 });
 
 const shouldUseLocalData = import.meta.env.VITE_USE_LOCAL_DATA === "true";
@@ -116,6 +122,7 @@ export const KittyProvider = ({ children }: { children: React.ReactNode }) => {
         connect,
         connectWithDevPhrase,
         disconnect,
+        api: polkadotApi,
       }}
     >
       {children}

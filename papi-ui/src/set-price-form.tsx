@@ -4,7 +4,6 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { cn } from "./utils";
 import { useKittyContext } from "./context/kitty-context";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import polkadotApi from "./papi-client";
 import { FixedSizeBinary } from "polkadot-api";
 import { toast } from "sonner";
 
@@ -27,12 +26,12 @@ export function SetPriceForm({ kittyDna, currentPrice }: Props) {
       price: currentPrice?.toString() || "",
     },
   });
-  const { polkadotSigner } = useKittyContext();
+  const { polkadotSigner, api } = useKittyContext();
   const queryClient = useQueryClient();
   const { mutate, isPending } = useMutation({
     mutationKey: ["setPrice", kittyDna],
     mutationFn: async (price?: bigint) =>
-      polkadotApi.tx.Kitties.set_price({
+      api.tx.Kitties.set_price({
         kitty_id: FixedSizeBinary.fromHex(kittyDna),
         new_price: price,
       }).signAndSubmit(polkadotSigner!),

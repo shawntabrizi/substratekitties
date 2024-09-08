@@ -1,26 +1,25 @@
+import { Grid, Heading } from "@radix-ui/themes";
 import { MarketplaceKittyCard } from "./marketplace-kitty-card";
-import { Heading, Grid } from "@radix-ui/themes";
-import { useKittyContext } from "./context/kitty-context";
+import type { KittyForSale } from "./context/kitty-context";
 
-export function MarketplaceList() {
-  const { kitties, selectedAccount } = useKittyContext();
+interface Props {
+  kittiesForSale: KittyForSale[];
+}
 
+export function MarketplaceList({ kittiesForSale }: Props) {
   return (
     <div>
       <Heading size="5" mb="4">
         Marketplace
       </Heading>
       <Grid columns="3" gap="4">
-        {kitties
-          .filter(
-            (kitty) =>
-              kitty.owner !== selectedAccount && kitty.price !== undefined
-          )
+        {kittiesForSale
+          .filter((kitty) => kitty.price !== undefined)
           .map((kitty) => (
             <MarketplaceKittyCard
               key={kitty.dna.toString()}
               dna={kitty.dna.toString()}
-              price={kitty.price!}
+              price={kitty.price}
               owner={kitty.owner}
             />
           ))}

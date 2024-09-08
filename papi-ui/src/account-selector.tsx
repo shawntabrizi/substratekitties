@@ -1,11 +1,17 @@
 import Identicon from "@polkadot/react-identicon";
 import { Select } from "@radix-ui/themes";
-import { useKittyContext } from "./context/kitty-context";
 
-export function AccountSelector() {
-  const { selectedAccount, setSelectedAccount, kittiesOwned } =
-    useKittyContext();
+interface Props {
+  accounts: string[];
+  selectedAccount?: string;
+  setSelectedAccount: (account: string) => void;
+}
 
+export function AccountSelector({
+  accounts,
+  selectedAccount,
+  setSelectedAccount,
+}: Props) {
   return (
     <Select.Root
       onValueChange={(newAccount) => setSelectedAccount(newAccount)}
@@ -15,7 +21,7 @@ export function AccountSelector() {
       <Select.Content>
         <Select.Group>
           <Select.Label>Accounts</Select.Label>
-          {Object.keys(kittiesOwned).map((account) => (
+          {accounts.map((account) => (
             <Select.Item key={account} value={account}>
               <Identicon value={account} size={16} theme="polkadot" />
               <span>{account}</span>

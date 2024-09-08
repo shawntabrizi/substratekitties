@@ -4,7 +4,6 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { cn } from "./utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { FixedSizeBinary } from "polkadot-api";
-import polkadotApi from "./papi-client";
 import { useKittyContext } from "./context/kitty-context";
 import { toast } from "sonner";
 
@@ -18,12 +17,12 @@ interface FormInputs {
 
 export function TransferKittyForm({ kittyDna }: Props) {
   const { register, handleSubmit, reset, formState } = useForm<FormInputs>();
-  const { polkadotSigner } = useKittyContext();
+  const { polkadotSigner, api } = useKittyContext();
   const queryClient = useQueryClient();
   const { mutate: transferKitty, isPending } = useMutation({
     mutationKey: ["transfer-kitty", kittyDna],
     mutationFn: async (newOwner: string) =>
-      polkadotApi.tx.Kitties.transfer({
+      api.tx.Kitties.transfer({
         kitty_id: FixedSizeBinary.fromHex(kittyDna),
         to: newOwner,
       }).signAndSubmit(polkadotSigner!),
