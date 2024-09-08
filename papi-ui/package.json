@@ -7,7 +7,7 @@
     "dev": "vite",
     "lint": "eslint .",
     "start": "papi && vite",
-    "build-external": "papi --whitelist whitelist.ts && tsc && vite build",
+    "build-external": "papi && tsc && vite build",
     "build": "pnpm build-external",
     "preview": "vite preview",
     "postinstall": "papi"
