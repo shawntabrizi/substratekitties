@@ -59,7 +59,7 @@ export function TransferKittyForm({ kittyDna }: Props) {
           </Form.Control>
           <Form.Message
             className={cn(
-              formState.errors.newOwner ? "text-destructive" : "hidden"
+              formState.errors.newOwner ? "text-red-500" : "hidden"
             )}
           >
             {formState.errors.newOwner?.message}

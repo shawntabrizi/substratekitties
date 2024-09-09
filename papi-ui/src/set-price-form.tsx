@@ -31,10 +31,14 @@ export function SetPriceForm({ kittyDna, currentPrice }: Props) {
   const { mutate, isPending } = useMutation({
     mutationKey: ["setPrice", kittyDna],
     mutationFn: setPrice,
-    onSuccess: async (response) => {
+    onSuccess: async (response, vars) => {
       console.log("Kitty price set", response);
       if (response.ok) {
-        toast.success("Kitty price set");
+        if (vars.price === undefined) {
+          toast.success("Kitty removed from market");
+        } else {
+          toast.success("Kitty price set");
+        }
       } else {
         toast.error(
           "Kitty price set failed, check the console for more information"
@@ -61,7 +65,7 @@ export function SetPriceForm({ kittyDna, currentPrice }: Props) {
             <TextField.Root type="number" placeholder="Set price" />
           </Form.Control>
           <Form.Message
-            className={cn(errors.price ? "text-destructive" : "hidden")}
+            className={cn(errors.price ? "text-red-500" : "hidden")}
           >
             {errors.price?.message}
           </Form.Message>

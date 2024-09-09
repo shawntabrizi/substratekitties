@@ -33,7 +33,9 @@ export function KittyList({
         {kitties.map((kitty) => (
           <KittyCard
             key={kitty.dna}
-            kitty={kitty}
+            dna={kitty.dna}
+            owner={kitty.owner}
+            price={kitty.price}
             isOwner={isUserSelectedAccount}
           />
         ))}

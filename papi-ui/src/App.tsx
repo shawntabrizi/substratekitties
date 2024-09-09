@@ -34,8 +34,6 @@ function Page() {
       ? selectedAccount === ss58Encode(polkadotSigner.publicKey, 0)
       : false;
 
-  console.log({ kitties, kittiesOwnedBySelectedAccount });
-
   return (
     <main className="p-4">
       <h1 className="pb-8 text-2xl font-bold">Substrate Kitties</h1>

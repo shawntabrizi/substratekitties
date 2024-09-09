@@ -28,15 +28,12 @@ export async function buyKitty({
     if (!kitty) {
       return { ok: false, error: "Kitty not found" };
     }
-    // remove kitty from original owner
-    kittiesOwned[kitty.owner] = kittiesOwned[kitty.owner].filter(
-      (kitty) => kitty !== dna
-    );
-    // add kitty to new owner
-    kittiesOwned[polkadotSigner.publicKey.toString()] = [
-      ...kittiesOwned[polkadotSigner.publicKey.toString()],
-      dna,
-    ];
+    const newOwner = ss58Encode(polkadotSigner.publicKey, 0);
+    kittiesOwned = {
+      ...kittiesOwned,
+      [kitty.owner]: kittiesOwned[kitty.owner].filter((kitty) => kitty !== dna),
+      [newOwner]: [...kittiesOwned[newOwner], dna],
+    };
     return { ok: true };
   }
   if (!polkadotApi) {
@@ -67,8 +64,8 @@ export async function mintKitty({
       owner,
       price: undefined,
     };
-    kitties.push(newKitty);
-    kittiesOwned[owner].push(newKitty.dna);
+    kitties = [...kitties, newKitty];
+    kittiesOwned[owner] = [...kittiesOwned[owner], newKitty.dna];
     return { ok: true };
   }
   if (!polkadotApi) {
@@ -96,7 +93,9 @@ export async function setPrice({
     if (!kitty) {
       return { ok: false, error: "Kitty not found" };
     }
-    kitty.price = price?.toString();
+    kitties = kitties.map((kitty) =>
+      kitty.dna === dna ? { ...kitty, price: price?.toString() } : kitty
+    );
     return { ok: true };
   }
   if (!polkadotApi) {
@@ -126,13 +125,16 @@ export async function transferKitty({
     if (!kitty) {
       return { ok: false, error: "Kitty not found" };
     }
-    kitty.owner = newOwner;
-    // remove kitty from original owner
-    kittiesOwned[kitty.owner] = kittiesOwned[kitty.owner].filter(
-      (kitty) => kitty !== kittyId
+    kitties = kitties.map((kitty) =>
+      kitty.dna === kittyId ? { ...kitty, owner: newOwner } : kitty
     );
-    // add kitty to new owner
-    kittiesOwned[newOwner] = [...kittiesOwned[newOwner], kittyId];
+    kittiesOwned = {
+      ...kittiesOwned,
+      [kitty.owner]: kittiesOwned[kitty.owner].filter(
+        (kitty) => kitty !== kittyId
+      ),
+      [newOwner]: [...kittiesOwned[newOwner], kittyId],
+    };
     return { ok: true };
   }
   if (!polkadotApi) {
@@ -145,7 +147,6 @@ export async function transferKitty({
 }
 
 export async function getKitties() {
-  console.log("get kitties", kitties);
   if (SHOULD_USE_LOCAL_DATA) {
     return [...kitties];
   }
@@ -161,7 +162,6 @@ export async function getKitties() {
 }
 
 export async function getKittiesOwned() {
-  console.log("get kitties owned", kittiesOwned);
   if (SHOULD_USE_LOCAL_DATA) {
     return { ...kittiesOwned };
   }

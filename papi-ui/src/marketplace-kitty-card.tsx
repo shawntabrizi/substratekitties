@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { buyKitty } from "./api/methods";
 import { useKittyContext } from "./context/use-kitty-context";
+import { KittyAvatar } from "./kitty-avatar";
 
 interface Props {
   dna: string;
@@ -41,6 +42,7 @@ export function MarketplaceKittyCard({ dna, price, owner }: Props) {
   return (
     <Card size="2">
       <Flex direction="column" gap="2">
+        <KittyAvatar dna={dna} />
         <Heading as="h3" size="4">
           Kitty DNA: {dna}
         </Heading>
