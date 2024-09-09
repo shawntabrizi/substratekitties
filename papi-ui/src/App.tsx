@@ -24,7 +24,12 @@ function Page() {
 
   const accountsWithKitties = Object.keys(kittiesOwned);
   const kittiesForSale = kitties.filter(
-    (kitty) => kitty.price !== undefined && kitty.owner !== selectedAccount
+    (kitty) =>
+      kitty.price !== undefined &&
+      // If the user is not connected, we show all the kitties for sale
+      // If the user is connected, we only show the kitties for sale that are not owned by the user
+      (polkadotSigner === undefined ||
+        kitty.owner !== ss58Encode(polkadotSigner.publicKey, 0))
   ) as KittyForSale[];
   const kittiesOwnedBySelectedAccount = kitties.filter(
     (kitty) => kitty.owner === selectedAccount
