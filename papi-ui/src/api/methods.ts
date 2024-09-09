@@ -34,6 +34,9 @@ export async function buyKitty({
       [kitty.owner]: kittiesOwned[kitty.owner].filter((kitty) => kitty !== dna),
       [newOwner]: [...kittiesOwned[newOwner], dna],
     };
+    kitties = kitties.map((kitty) =>
+      kitty.dna === dna ? { ...kitty, owner: newOwner } : kitty
+    );
     return { ok: true };
   }
   if (!polkadotApi) {
