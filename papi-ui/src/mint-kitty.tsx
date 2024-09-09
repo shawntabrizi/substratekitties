@@ -2,7 +2,7 @@ import { Button, Heading } from "@radix-ui/themes";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { mintKitty } from "./api/methods";
-import { useKittyContext } from "./context/kitty-context";
+import { useKittyContext } from "./context/use-kitty-context";
 
 export function MintKitty() {
   const { polkadotSigner } = useKittyContext();
@@ -19,7 +19,13 @@ export function MintKitty() {
           "Kitty minting failed, check the console for more information"
         );
       }
-      queryClient.invalidateQueries({ queryKey: ["kitties"] });
+      await queryClient.invalidateQueries({ queryKey: ["kitties"] });
+    },
+    onError: (error) => {
+      toast.error(
+        "Kitty minting failed, check the console for more information"
+      );
+      console.error(error);
     },
   });
 

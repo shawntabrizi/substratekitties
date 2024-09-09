@@ -4,12 +4,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { setPrice } from "./api/methods";
-import { useKittyContext } from "./context/kitty-context";
+import { useKittyContext } from "./context/use-kitty-context";
 import { cn } from "./utils";
 
 interface Props {
   kittyDna: string;
-  currentPrice?: bigint;
+  currentPrice?: string;
 }
 
 interface FormInputs {
@@ -31,7 +31,7 @@ export function SetPriceForm({ kittyDna, currentPrice }: Props) {
   const { mutate, isPending } = useMutation({
     mutationKey: ["setPrice", kittyDna],
     mutationFn: setPrice,
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       console.log("Kitty price set", response);
       if (response.ok) {
         toast.success("Kitty price set");
@@ -40,7 +40,7 @@ export function SetPriceForm({ kittyDna, currentPrice }: Props) {
           "Kitty price set failed, check the console for more information"
         );
       }
-      queryClient.invalidateQueries({ queryKey: ["kitties"] });
+      await queryClient.invalidateQueries({ queryKey: ["kitties"] });
     },
   });
 

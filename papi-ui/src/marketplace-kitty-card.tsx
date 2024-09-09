@@ -2,17 +2,17 @@ import { Button, Card, Flex, Heading, Text } from "@radix-ui/themes";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { buyKitty } from "./api/methods";
-import { useKittyContext } from "./context/kitty-context";
+import { useKittyContext } from "./context/use-kitty-context";
 
 interface Props {
   dna: string;
   owner: string;
-  price: bigint;
+  price: string;
 }
 
 export function MarketplaceKittyCard({ dna, price, owner }: Props) {
-  const { polkadotSigner } = useKittyContext();
   const queryClient = useQueryClient();
+  const { polkadotSigner } = useKittyContext();
   const { mutate, isPending } = useMutation({
     mutationKey: ["purchase-kitty", dna],
     mutationFn: buyKitty,
@@ -35,7 +35,7 @@ export function MarketplaceKittyCard({ dna, price, owner }: Props) {
       return;
     }
 
-    mutate({ polkadotSigner, dna, maxPrice: price });
+    mutate({ polkadotSigner, dna, maxPrice: BigInt(price) });
   };
 
   return (

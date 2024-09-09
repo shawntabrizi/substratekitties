@@ -1,6 +1,6 @@
 import { Grid, Heading } from "@radix-ui/themes";
 import { MarketplaceKittyCard } from "./marketplace-kitty-card";
-import type { KittyForSale } from "./context/kitty-context";
+import type { KittyForSale } from "./types";
 
 interface Props {
   kittiesForSale: KittyForSale[];

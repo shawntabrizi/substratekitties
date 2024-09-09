@@ -1,5 +1,5 @@
 import { Grid, Heading, Text } from "@radix-ui/themes";
-import { type Kitty } from "./context/kitty-context";
+import { type Kitty } from "./types";
 import { KittyCard } from "./kitty-card";
 
 interface Props {

@@ -13,70 +13,27 @@ import {
   type InjectedPolkadotAccount,
 } from "polkadot-api/pjs-signer";
 import { getPolkadotSigner } from "polkadot-api/signer";
-import { createContext, useContext, useState } from "react";
+import { useState } from "react";
 import { getKitties, getKittiesOwned } from "../api/methods";
-import { data } from "./data";
+import { KittyContext } from "./use-kitty-context";
 
-export type Kitty = {
-  dna: string;
-  owner: string;
-  price?: bigint;
-};
-
-export type KittyForSale = Kitty & {
-  price: bigint;
-};
-
-interface KittyContextType {
-  kitties: Kitty[];
-  kittiesOwned: Record<string, string[]>; // owner => kitty DNA
-  selectedAccount?: string;
-  polkadotSigner?: PolkadotSigner;
-  setSelectedAccount: (account: string) => void;
-  connect: () => Promise<void>;
-  connectWithDevPhrase: (path?: string) => void;
-  disconnect: () => Promise<void>;
+interface Props {
+  children: React.ReactNode;
 }
 
-const KittyContext = createContext<KittyContextType>({
-  kitties: [],
-  kittiesOwned: {},
-  setSelectedAccount: () => {},
-  connect: () => Promise.resolve(),
-  connectWithDevPhrase: () => {},
-  disconnect: () => Promise.resolve(),
-});
-
-const shouldUseLocalData = import.meta.env.VITE_USE_LOCAL_DATA === "true";
-
-export const KittyProvider = ({ children }: { children: React.ReactNode }) => {
+export const KittyProvider = ({ children }: Props) => {
   const [selectedAccount, setSelectedAccount] = useState<string>();
   const [polkadotSigner, setPolkadotSigner] = useState<PolkadotSigner>();
 
   const { data: kitties } = useQuery({
     queryKey: ["kitties"],
-    queryFn: async () => {
-      const kitties = await getKitties();
-      return kitties.map((kitty) => ({
-        dna: kitty.value.dna.asHex(),
-        owner: kitty.value.owner.toString(),
-        price: kitty.value.price,
-      }));
-    },
-    enabled: !shouldUseLocalData,
-    initialData: data.kitties,
+    queryFn: getKitties,
+    staleTime: 0,
   });
   const { data: kittiesOwned } = useQuery({
     queryKey: ["kitties", "owned"],
-    queryFn: async () => {
-      const data = await getKittiesOwned();
-      return data.reduce((acc, kitty) => {
-        acc[kitty.keyArgs.toString()] = kitty.value.map((dna) => dna.asHex());
-        return acc;
-      }, {} as Record<string, string[]>);
-    },
-    enabled: !shouldUseLocalData,
-    initialData: data.kittiesOwned,
+    queryFn: getKittiesOwned,
+    staleTime: 0,
   });
 
   async function connect() {
@@ -105,6 +62,7 @@ export const KittyProvider = ({ children }: { children: React.ReactNode }) => {
     );
     setPolkadotSigner(polkadotSigner);
   }
+
   async function disconnect() {
     setPolkadotSigner(undefined);
   }
@@ -125,12 +83,4 @@ export const KittyProvider = ({ children }: { children: React.ReactNode }) => {
       {children}
     </KittyContext.Provider>
   );
-};
-
-export const useKittyContext = () => {
-  const context = useContext(KittyContext);
-  if (!context) {
-    throw new Error("useKittyContext must be used within a KittyProvider");
-  }
-  return context;
 };

@@ -1,21 +1,19 @@
+import { ss58Encode } from "@polkadot-labs/hdkd-helpers";
 import { Grid, Theme } from "@radix-ui/themes";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "sonner";
 import { AccountSelector } from "./account-selector";
-import {
-  KittyProvider,
-  useKittyContext,
-  type KittyForSale,
-} from "./context/kitty-context";
+import { ConnectButton } from "./connect-button";
+import { KittyProvider } from "./context/kitty-context";
+import { useKittyContext } from "./context/use-kitty-context";
 import { KittyList } from "./kitty-list";
 import { MarketplaceList } from "./marketplace-list";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ConnectButton } from "./connect-button";
-import { Toaster } from "sonner";
 import { MintKitty } from "./mint-kitty";
-import { ss58Decode } from "@polkadot-labs/hdkd-helpers";
+import { type KittyForSale } from "./types";
 
 const queryClient = new QueryClient();
 
-export default function App() {
+function Page() {
   const {
     kittiesOwned,
     selectedAccount,
@@ -33,32 +31,39 @@ export default function App() {
   );
   const isUserSelectedAccount =
     polkadotSigner !== undefined && selectedAccount !== undefined
-      ? polkadotSigner.publicKey.toString() ===
-        ss58Decode(selectedAccount)[0].toString()
+      ? selectedAccount === ss58Encode(polkadotSigner.publicKey, 0)
       : false;
 
+  console.log({ kitties, kittiesOwnedBySelectedAccount });
+
+  return (
+    <main className="p-4">
+      <h1 className="pb-8 text-2xl font-bold">Substrate Kitties</h1>
+      <Grid gap="4" columns="1">
+        <ConnectButton />
+        <AccountSelector
+          accounts={accountsWithKitties}
+          selectedAccount={selectedAccount}
+          setSelectedAccount={setSelectedAccount}
+        />
+        <MintKitty />
+        <KittyList
+          kitties={kittiesOwnedBySelectedAccount}
+          selectedAccount={selectedAccount}
+          isUserSelectedAccount={isUserSelectedAccount}
+        />
+        <MarketplaceList kittiesForSale={kittiesForSale} />
+      </Grid>
+    </main>
+  );
+}
+
+export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <Theme>
         <KittyProvider>
-          <main className="p-4">
-            <h1 className="pb-8 text-2xl font-bold">Substrate Kitties</h1>
-            <Grid gap="4" columns="1">
-              <ConnectButton />
-              <AccountSelector
-                accounts={accountsWithKitties}
-                selectedAccount={selectedAccount}
-                setSelectedAccount={setSelectedAccount}
-              />
-              <MintKitty />
-              <KittyList
-                kitties={kittiesOwnedBySelectedAccount}
-                selectedAccount={selectedAccount}
-                isUserSelectedAccount={isUserSelectedAccount}
-              />
-              <MarketplaceList kittiesForSale={kittiesForSale} />
-            </Grid>
-          </main>
+          <Page />
           <Toaster />
         </KittyProvider>
       </Theme>

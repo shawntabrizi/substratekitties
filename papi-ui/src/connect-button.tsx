@@ -1,6 +1,6 @@
-import { ss58PublicKey } from "@polkadot-labs/hdkd-helpers";
+import { ss58Encode } from "@polkadot-labs/hdkd-helpers";
 import { Button, Flex } from "@radix-ui/themes";
-import { useKittyContext } from "./context/kitty-context";
+import { useKittyContext } from "./context/use-kitty-context";
 
 export function ConnectButton() {
   const { connect, polkadotSigner, disconnect, connectWithDevPhrase } =
@@ -12,7 +12,7 @@ export function ConnectButton() {
     return (
       <Flex>
         <Button onClick={disconnect}>
-          Disconnect {ss58PublicKey(polkadotSigner!.publicKey, 42)}
+          Disconnect {ss58Encode(polkadotSigner.publicKey, 0)}
         </Button>
       </Flex>
     );

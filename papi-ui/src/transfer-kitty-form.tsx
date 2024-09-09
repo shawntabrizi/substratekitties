@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { transferKitty } from "./api/methods";
-import { useKittyContext } from "./context/kitty-context";
+import { useKittyContext } from "./context/use-kitty-context";
 import { cn } from "./utils";
 
 interface Props {
@@ -31,7 +31,7 @@ export function TransferKittyForm({ kittyDna }: Props) {
           "Kitty transfer failed, check the console for more information"
         );
       }
-      queryClient.invalidateQueries({ queryKey: ["kitties"] });
+      await queryClient.invalidateQueries({ queryKey: ["kitties"] });
     },
   });
 

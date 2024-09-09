@@ -1,4 +1,4 @@
-import type { Kitty } from "./kitty-context";
+import type { Kitty } from "../types";
 
 let kitties = [
   {
@@ -12,7 +12,7 @@ let kitties = [
   {
     dna: "0xd925ad500b4d02d656e66a4fda1cc32f71c5285f784559e82a8ace33e6802cf6",
     owner: "15oF4uVJwmo4TdGW7VfQxNLavjCXviqxT9S1MgbjMNHr6Sp5",
-    price: 123456n,
+    price: 123456,
   },
   {
     dna: "0x3347ff95f67432f4fb236daf78dfec0a18e12b4e22f3db2b69c34f8d9e892a31",
@@ -29,7 +29,7 @@ let kitties = [
   {
     dna: "0x7f6629f239c4a30495c3eb68442b267f4823769e79e437ca54c6da6c4c2e005e",
     owner: "16D2eVuK5SWfwvtFD3gVdBC2nc2BafK31BY6PrbZHBAGew7L",
-    price: 456789n,
+    price: 456789,
   },
   {
     dna: "0x8eb69b4b3852aeb9e3daeb7f2878be7ae7f4075661ac9d7b4ca97e47a80832e2",
@@ -68,6 +68,4 @@ let kittiesOwned = {
   ],
 } as Record<string, string[]>;
 
-let countForKitties = 10;
-
-export const data = { kitties, kittiesOwned, countForKitties };
+export const data = { kitties, kittiesOwned };
