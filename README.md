@@ -92,7 +92,7 @@ You can learn how to build the different parts of the Substrate Kitties project 
 
 ### Substrate Collectables Workshop
 
-Learn how to build your fist Polkadot SDK Pallet:
+Learn how to build your first Polkadot SDK Pallet:
 
 https://shawntabrizi.github.io/substrate-collectables-workshop/
 
