@@ -40,6 +40,9 @@ https://github.com/shawntabrizi/substratekitties/commit/4129751eba6d12d7cdaff3c4
 
 This project is local to this repo.
 
+Built by: @marcuspang (thank you!)
+PR: https://github.com/shawntabrizi/substratekitties/pull/42
+
 ## Setup
 
 To run this project, you will need to install some prerequisites and compile the projects.
@@ -84,7 +87,7 @@ You should see that blocks are being produced in the terminal logs.
 
 ### Running the UI
 
-TODO
+See the [README included with the UI](./papi-ui/README.md).
 
 ## Tutorials
 
