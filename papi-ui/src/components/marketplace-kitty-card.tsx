@@ -1,8 +1,8 @@
 import { Button, Card, Flex, Heading, Text } from "@radix-ui/themes";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { buyKitty } from "./api/methods";
-import { useKittyContext } from "./context/use-kitty-context";
+import { buyKitty } from "../api/methods";
+import { useKittyContext } from "../context/use-kitty-context";
 import { KittyAvatar } from "./kitty-avatar";
 
 interface Props {
@@ -43,11 +43,18 @@ export function MarketplaceKittyCard({ dna, price, owner }: Props) {
     <Card size="2">
       <Flex direction="column" gap="2">
         <KittyAvatar dna={dna} />
-        <Heading as="h3" size="4">
-          Kitty DNA: {dna}
+        <Heading as="h3" size="2">
+          DNA
         </Heading>
-        <Text>Owner: {owner}</Text>
-        <Text>Price: {price?.toString()}</Text>
+        <Text>{dna}</Text>
+        <Heading as="h3" size="2">
+          Owner
+        </Heading>
+        <Text>{owner}</Text>
+        <Heading as="h3" size="2">
+          Price
+        </Heading>
+        <Text>{price?.toString()}</Text>
         <Button
           onClick={handlePurchase}
           loading={isPending}

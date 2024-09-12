@@ -2,13 +2,13 @@ import { ss58Encode } from "@polkadot-labs/hdkd-helpers";
 import { Grid, Theme } from "@radix-ui/themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
-import { AccountSelector } from "./account-selector";
-import { ConnectButton } from "./connect-button";
+import { AccountSelector } from "./components/account-selector";
+import { ConnectButton } from "./components/connect-button";
 import { KittyProvider } from "./context/kitty-context";
 import { useKittyContext } from "./context/use-kitty-context";
-import { KittyList } from "./kitty-list";
-import { MarketplaceList } from "./marketplace-list";
-import { MintKitty } from "./mint-kitty";
+import { KittyList } from "./components/kitty-list";
+import { MarketplaceList } from "./components/marketplace-list";
+import { MintKitty } from "./components/mint-kitty";
 import { type KittyForSale } from "./types";
 
 const queryClient = new QueryClient();
