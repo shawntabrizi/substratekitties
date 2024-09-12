@@ -1,8 +1,8 @@
 import { Button, Card, Flex, Heading, Text } from "@radix-ui/themes";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { buyKitty } from "./api/methods";
-import { useKittyContext } from "./context/use-kitty-context";
+import { buyKitty } from "../api/methods";
+import { useKittyContext } from "../context/use-kitty-context";
 import { KittyAvatar } from "./kitty-avatar";
 
 interface Props {

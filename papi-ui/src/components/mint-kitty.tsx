@@ -1,8 +1,8 @@
 import { Button, Heading } from "@radix-ui/themes";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { mintKitty } from "./api/methods";
-import { useKittyContext } from "./context/use-kitty-context";
+import { mintKitty } from "../api/methods";
+import { useKittyContext } from "../context/use-kitty-context";
 
 export function MintKitty() {
   const { polkadotSigner } = useKittyContext();

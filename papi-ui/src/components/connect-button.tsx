@@ -1,6 +1,6 @@
 import { ss58Encode } from "@polkadot-labs/hdkd-helpers";
 import { Button, Flex } from "@radix-ui/themes";
-import { useKittyContext } from "./context/use-kitty-context";
+import { useKittyContext } from "../context/use-kitty-context";
 
 export function ConnectButton() {
   const { connect, polkadotSigner, disconnect, connectWithDevPhrase } =

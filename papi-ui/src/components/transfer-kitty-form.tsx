@@ -3,9 +3,9 @@ import { Button, Flex, TextField } from "@radix-ui/themes";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { transferKitty } from "./api/methods";
-import { useKittyContext } from "./context/use-kitty-context";
-import { cn } from "./utils";
+import { transferKitty } from "../api/methods";
+import { useKittyContext } from "../context/use-kitty-context";
+import { cn } from "../utils";
 
 interface Props {
   kittyDna: string;
