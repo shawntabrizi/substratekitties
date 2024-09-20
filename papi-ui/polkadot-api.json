@@ -3,7 +3,8 @@
   "descriptorPath": ".papi/descriptors",
   "entries": {
     "dev": {
-      "wsUrl": "ws://localhost:9944"
+      "wsUrl": "ws://localhost:9944",
+      "metadata": ".papi/metadata/dev.scale"
     }
   }
 }

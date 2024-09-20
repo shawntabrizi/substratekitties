@@ -4,7 +4,7 @@
   "entries": {
     "dev": {
       "wsUrl": "ws://localhost:9944",
-      "metadata": ".papi/metadata/wsUrl.scale"
+      "metadata": ".papi/metadata/dev.scale"
     }
   }
 }
