@@ -8,7 +8,7 @@
     "lint": "eslint .",
     "start": "papi && vite",
     "build-external": "papi && tsc && vite build",
-    "build": "yarn build-external",
+    "build": "npm run  build-external",
     "preview": "vite preview",
     "postinstall": "papi"
   },
